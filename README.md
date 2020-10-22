@@ -11,7 +11,7 @@ https://e2e.ti.com/blogs_/archives/b/launchyourdesign/archive/2016/10/27/what-yo
 - For Android: Download Evothings Viewer
 
 
-# Connecting to the TI SensorTag device for CS3237
+## Connecting to the TI SensorTag device for CS3237
 
 ## Instructions
 
