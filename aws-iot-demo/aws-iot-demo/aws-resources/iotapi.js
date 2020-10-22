@@ -1,4 +1,4 @@
-// Lambda function acting as API endpoint for Evothings IoT Example
+// EC2 function acting as API endpoint for Evothings IoT Example
 
 console.log('Loading function');
 
@@ -85,4 +85,3 @@ var query = function(sensorid, context) {
     });
     
 }
-

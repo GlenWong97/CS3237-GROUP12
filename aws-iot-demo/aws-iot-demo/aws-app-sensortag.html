@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-IoT app for the TI SensorTag that uses the AWS Lambda API.
+IoT app for the TI SensorTag that uses the AWS EC2 API.
 -->
 <html>
 
@@ -10,7 +10,7 @@ IoT app for the TI SensorTag that uses the AWS Lambda API.
 	<meta name="viewport" content="width=device-width, user-scalable=no
 		initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
 
-	<title>AWS Lambda TI SensorTag IoT Demo</title>
+	<title>AWS EC2 TI SensorTag IoT Demo</title>
 
 	<style>
 	@import 'ui/css/evothings-app.css';
@@ -30,7 +30,7 @@ IoT app for the TI SensorTag that uses the AWS Lambda API.
 		<img class="logotype" src="ui/images/logo.svg" alt="Evothings" />
 	</header>
 
-	<h1>AWS Lambda TI SensorTag IoT Demo</h1>
+	<h1>AWS EC2 TI SensorTag IoT Demo</h1>
 
 	<button class="green wide" onclick="connectToSensorTag()">
 		Start reading SensorTag
@@ -43,7 +43,7 @@ IoT app for the TI SensorTag that uses the AWS Lambda API.
 
 	<p><strong>Instructions:</strong></p>
 
-	<p>This app demonstrates how to upload data from a Texas Instruments Bluetooth Smart SensorTag to the Amazon AWS Lambda service.</p>
+	<p>This app demonstrates how to upload data from a Texas Instruments Bluetooth Smart SensorTag to the Amazon AWS EC2 service.</p>
 	<p>Edit the source code of file aws-config.js to use your AWS credentials. See the README file for further information.</p>
 	<p>When ready to go, activate the SensorTag and press the Start button to connect and start uploading sensor data.</p>
 	<p>To monitor temperature data, run the example app 'aws-app-read.html' on another phone.</p>
@@ -155,7 +155,7 @@ IoT app for the TI SensorTag that uses the AWS Lambda API.
 			displayMessage('Write error: ' + JSON.stringify(error))
 		}
 
-		// Write the temperature value to the AWS Lambda cloud.
+		// Write the temperature value to the AWS EC2 cloud.
 		displayMessage('Writing temperature...')
 		evothings.aws.update('Temperature', temperature, successCallback, errorCallback)
 	}

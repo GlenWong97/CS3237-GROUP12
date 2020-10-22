@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-Read/Write demo app for the AWS Lambda API.
+Read/Write demo app for the AWS EC2 API.
 -->
 <html>
 
@@ -10,7 +10,7 @@ Read/Write demo app for the AWS Lambda API.
 	<meta name="viewport" content="width=device-width, user-scalable=no
 		initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
 
-	<title>AWS Lambda Read/Write IoT Demo</title>
+	<title>AWS EC2 Read/Write IoT Demo</title>
 
 	<style>
 	@import 'ui/css/evothings-app.css';
@@ -30,7 +30,7 @@ Read/Write demo app for the AWS Lambda API.
 		<img class="logotype" src="ui/images/logo.svg" alt="Evothings" />
 	</header>
 
-	<h1>AWS Lambda Read/Write IoT Demo</h1>
+	<h1>AWS EC2 Read/Write IoT Demo</h1>
 
 	<button class="yellow wide" onclick="writeValue()">
 		Write temperature value
@@ -43,13 +43,13 @@ Read/Write demo app for the AWS Lambda API.
 
 	<p><strong>Detailed Instructions:</strong></p>
 
-	<p>Tap the Write button to write a random temperature sensor value to the Amazon AWS Lambda service.</p>
-	<p>Tap the Read button to read the current temperature value stored by the Amazon AWS Lambda service.</p>
+	<p>Tap the Write button to write a random temperature sensor value to the Amazon AWS EC2 service.</p>
+	<p>Tap the Read button to read the current temperature value stored by the Amazon AWS EC2 service.</p>
 	<p>Edit the source code of file aws-config.js to use your AWS credentials. See the README file for further information.</p>
 
 	<script src="cordova.js"></script>
 	<script src="libs/evothings/evothings.js"></script>
-    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1.32.min.js"></script>
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.776.0.min.js"></script>
     <script src="aws-lib.js"></script>
     <script src="aws-config.js"></script>
 
@@ -62,7 +62,9 @@ Read/Write demo app for the AWS Lambda API.
 	function initializeAWS()
 	{
 		// TODO: Update aws-config.js with your access keys.
-		evothings.aws.initialize(evothings.aws.config)
+		evothings.aws.initEC2(evothings.aws.config)
+		evothings.aws.initEBS(evothings.aws.ebsconfig)
+
 	}
 
 	function writeValue()
@@ -73,6 +75,7 @@ Read/Write demo app for the AWS Lambda API.
 
 		function successCallback()
 		{
+		
 			displayMessage('Written temperature: ' + value)
 		}
 
@@ -82,7 +85,8 @@ Read/Write demo app for the AWS Lambda API.
 		}
 
 		// Write the value.
-		evothings.aws.update('Temperature', value, successCallback, errorCallback)
+		// evothings.aws.update('Temperature', value, successCallback, errorCallback)
+		evothings.aws.update(value, successCallback, errorCallback)
 	}
 
 	function readValue()

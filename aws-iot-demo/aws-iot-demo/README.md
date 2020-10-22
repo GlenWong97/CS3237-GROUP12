@@ -1,20 +1,20 @@
-# Amazon AWS Lambda IoT demo
+# Amazon AWS EC2 IoT demo
 
-In this tutorial we will create mobile apps in JavaScript that communicate with BLE devices and interact with the AWS Lambda cloud. We will explore three example apps that read and write temperature sensor data using AWS Lambda. It is easy to get started!
+In this tutorial we will create mobile apps in JavaScript that communicate with BLE devices and interact with the AWS EC2 cloud. We will explore three example apps that read and write temperature sensor data using AWS EC2. It is easy to get started!
 
 <!--more-->
 
 ## Mobile apps for IoT and the Amazon cloud
 
-There are many Internet of Things applications that have a need to collect and use sensor data. It is handy to store the sensor data using a cloud service such as AWS Lambda. A wide variety of sensor data can be handled, for instance, vehicle information, container and shipping data, motion tracking and health data.
+There are many Internet of Things applications that have a need to collect and use sensor data. It is handy to store the sensor data using a cloud service such as AWS EC2. A wide variety of sensor data can be handled, for instance, vehicle information, container and shipping data, motion tracking and health data.
 
-In this tutorial we will explore IoT applications using Evothings Studio. The demo apps we will use read and write temperature data using the Amazon AWS Lambda cloud service.
+In this tutorial we will explore IoT applications using Evothings Studio. The demo apps we will use read and write temperature data using the Amazon AWS EC2 cloud service.
 
-If you have a TI SensorTag, there is an example app you can use to read sensor data from the tag and save it to AWS Lambda. And you can use another example app to view the data as it is updated.
+If you have a TI SensorTag, there is an example app you can use to read sensor data from the tag and save it to AWS EC2. And you can use another example app to view the data as it is updated.
 
 By writing your own code, you can connect to other IoT sensors, such as Arduino, MediaTek boards, ARM mbed boards, and many more.
 
-Importantly, you can try out the examples and get started with AWS Lambda without having any specific hardware - we have provided demos for the bare-bones cloud communication.
+Importantly, you can try out the examples and get started with AWS EC2 without having any specific hardware - we have provided demos for the bare-bones cloud communication.
 
 ## Install Evothings Studio
 
@@ -22,13 +22,13 @@ The <a href="http://evothings.com/evothings-studio-starter-kit/">Evothings Studi
 
 ## Download the example app code
 
-The <a href="https://github.com/divineprog/evo-demos/tree/master/Demos2015/aws-iot-demo">example code for this tutorial</a> is available on GitHub. The demo is called "AWS Lambda IoT Demo" and contains the code needed to run the example apps using Evothings Client and Evothings Workbench.
+The <a href="https://github.com/divineprog/evo-demos/tree/master/Demos2015/aws-iot-demo">example code for this tutorial</a> is available on GitHub. The demo is called "AWS EC2 IoT Demo" and contains the code needed to run the example apps using Evothings Client and Evothings Workbench.
 
 ## Set up your AWS account
 
-Please follow the <a href="http://docs.aws.amazon.com/lambda/latest/dg/setting-up.html"> instructions at the AWS website</a> to get up and running with AWS Lambda.
+Please follow the <a href="https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/EC2.html"> instructions at the AWS website</a> to get up and running with AWS EC2.
 
-The files in folder <code>aws-resources</code> contains templates you can use to set up the AWS Lambda service.
+The files in folder <code>aws-resources</code> contains templates you can use to set up the AWS EC2 service.
 
 ## Enter your access keys
 
@@ -51,7 +51,7 @@ Here are the files:
 
 * index.html - Contains links to the example apps, drag this into Evothings Workbench and click RUN to get going.
 * aws-app-read-write.html - Example with buttons for writing randomly generated temperature values, and reading the most recent temperature value.
-* aws-app-read.html - Example that monitors the most recent temperature value by reading the value from AWS Lambda every 5 seconds.
+* aws-app-read.html - Example that monitors the most recent temperature value by reading the value from AWS EC2 every 5 seconds.
 * aws-app-sensortag.html - Example that connects to the TI SensorTag CC2650 and writes temperature data read from the tag every 5 seconds. Check out the <a href="http://evothings.com/ti-sensortag-starter-kit/">TI SensorTag Starter Kit</a> to get up to speed with the SensorTag.
 
 ## Running the demo apps
@@ -70,7 +70,7 @@ Run the demo apps as follows:
     <li>Drag file index.html to the Workbench project list window</li>
     <li>Start Evothings Client on your mobile device(s)</li>
     <li>Connect to the Workbench from Evothings Client -  Use the same WiFi network for the Workbench and the mobile and make sure that it allows client connections. Network client isolation must be disabled.</li>
-    <li>Click the RUN button on "AWS Lambda IoT Demo" in the Workbench project list.</li>
+    <li>Click the RUN button on "AWS EC2 IoT Demo" in the Workbench project list.</li>
     <li>On each mobile device, select the app you wish to run on the device by pressing the different buttons.</li>
     <li>Have fun by updating the temperature values from different mobile devices running different apps.</li>
 </ul>
