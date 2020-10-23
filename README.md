@@ -1,4 +1,4 @@
-# CS3237-GROUP22
+# CS3237-GROUP12
 Gesture recognition using LSTM
 
 https://e2e.ti.com/blogs_/archives/b/launchyourdesign/archive/2016/10/27/what-you-need-to-connect-a-sensortag-to-the-amazon-aws-cloud-via-a-mobile-app
@@ -10,7 +10,7 @@ https://e2e.ti.com/blogs_/archives/b/launchyourdesign/archive/2016/10/27/what-yo
 - For iOS: Download CGTek Viewer
 - For Android: Download Evothings Viewer
 
-
+<br><br>
 ## Connecting to the TI SensorTag device for CS3237
 
 ## Instructions

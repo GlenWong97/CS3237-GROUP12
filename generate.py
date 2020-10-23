@@ -113,9 +113,9 @@ class AccelerometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
         elif READY == 1:
             print("Setup ready, please do your action...")
         elif READY >= 2:
-            with open('./train/IndividualSignals/acc_x_train.csv','a') as a, \
-                 open('./train/IndividualSignals/acc_y_train.csv','a') as b, \
-                 open('./train/IndividualSignals/acc_z_train.csv','a') as c:
+            with open('./ProjectData/IndividualSignals/acc_x.csv','a') as a, \
+                 open('./ProjectData/IndividualSignals/acc_y.csv','a') as b, \
+                 open('./ProjectData/IndividualSignals/acc_z.csv','a') as c:
                 a.write("{}\n".format(rawVals[0]))
                 b.write("{}\n".format(rawVals[1]))
                 c.write("{}\n".format(rawVals[2]))
@@ -134,9 +134,9 @@ class MagnetometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
         global READY
         
         if READY >= 2:
-            with open('./train/IndividualSignals/mag_x_train.csv','a') as a, \
-                 open('./train/IndividualSignals/mag_y_train.csv','a') as b, \
-                 open('./train/IndividualSignals/mag_z_train.csv','a') as c:
+            with open('./ProjectData/IndividualSignals/mag_x.csv','a') as a, \
+                 open('./ProjectData/IndividualSignals/mag_y.csv','a') as b, \
+                 open('./ProjectData/IndividualSignals/mag_z.csv','a') as c:
                 a.write("{}\n".format(rawVals[0]))
                 b.write("{}\n".format(rawVals[1]))
                 c.write("{}\n".format(rawVals[2]))
@@ -153,9 +153,9 @@ class GyroscopeSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
         rawVals = data[0:3]
         global READY
         if READY >= 2:
-            with open('./train/IndividualSignals/gyro_x_train.csv','a') as a, \
-                 open('./train/IndividualSignals/gyro_y_train.csv','a') as b, \
-                 open('./train/IndividualSignals/gyro_z_train.csv','a') as c:
+            with open('./ProjectData/IndividualSignals/gyro_x.csv','a') as a, \
+                 open('./ProjectData/IndividualSignals/gyro_y.csv','a') as b, \
+                 open('./ProjectData/IndividualSignals/gyro_z.csv','a') as c:
                 a.write("{}\n".format(rawVals[0]))
                 b.write("{}\n".format(rawVals[1]))
                 c.write("{}\n".format(rawVals[2]))
@@ -200,10 +200,10 @@ class BarometerSensor(Sensor):
             (tL, tM, tH, pL, pM, pH) = struct.unpack('<BBBBBB', data)
             temp = (tH*65536 + tM*256 + tL) / 100.0
             press = (pH*65536 + pM*256 + pL) / 100.0
-            with open('./train/IndividualSignals/baro_train.csv','a') as f:
+            with open('./ProjectData/IndividualSignals/baro.csv','a') as f:
                 f.write(str(press)) 
                 f.write('\n') 
-            with open('./train/y_train.csv','a') as f:
+            with open('./ProjectData/y.csv','a') as f:
                 f.write(LABEL) 
                 f.write('\n') 
             
