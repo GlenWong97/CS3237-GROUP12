@@ -19,6 +19,8 @@ from bleak import BleakClient
 LABEL = '1'
 # Coordination global variable
 READY = -1
+# Datatype: test or train
+DATATYPE = "train"
 
 class Service:
     """
@@ -113,9 +115,9 @@ class AccelerometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
         elif READY == 1:
             print("Setup ready, please do your action...")
         elif READY >= 2:
-            with open('./ProjectData/IndividualSignals/acc_x.csv','a') as a, \
-                 open('./ProjectData/IndividualSignals/acc_y.csv','a') as b, \
-                 open('./ProjectData/IndividualSignals/acc_z.csv','a') as c:
+            with open('./ProjectData/{0}/IndividualSignals/acc_x_{0}.csv'.format(DATATYPE),'a') as a, \
+                 open('./ProjectData/{0}/IndividualSignals/acc_y_{0}.csv'.format(DATATYPE),'a') as b, \
+                 open('./ProjectData/{0}/IndividualSignals/acc_z_{0}.csv'.format(DATATYPE),'a') as c:
                 a.write("{}\n".format(rawVals[0]))
                 b.write("{}\n".format(rawVals[1]))
                 c.write("{}\n".format(rawVals[2]))
@@ -134,9 +136,9 @@ class MagnetometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
         global READY
         
         if READY >= 2:
-            with open('./ProjectData/IndividualSignals/mag_x.csv','a') as a, \
-                 open('./ProjectData/IndividualSignals/mag_y.csv','a') as b, \
-                 open('./ProjectData/IndividualSignals/mag_z.csv','a') as c:
+            with open('./ProjectData/{0}/IndividualSignals/mag_x_{0}.csv'.format(DATATYPE),'a') as a, \
+                 open('./ProjectData/{0}/IndividualSignals/mag_y_{0}.csv'.format(DATATYPE),'a') as b, \
+                 open('./ProjectData/{0}/IndividualSignals/mag_z_{0}.csv'.format(DATATYPE),'a') as c:
                 a.write("{}\n".format(rawVals[0]))
                 b.write("{}\n".format(rawVals[1]))
                 c.write("{}\n".format(rawVals[2]))
@@ -153,9 +155,9 @@ class GyroscopeSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
         rawVals = data[0:3]
         global READY
         if READY >= 2:
-            with open('./ProjectData/IndividualSignals/gyro_x.csv','a') as a, \
-                 open('./ProjectData/IndividualSignals/gyro_y.csv','a') as b, \
-                 open('./ProjectData/IndividualSignals/gyro_z.csv','a') as c:
+            with open('./ProjectData/{0}/IndividualSignals/gyro_x_{0}.csv'.format(DATATYPE),'a') as a, \
+                 open('./ProjectData/{0}/IndividualSignals/gyro_y_{0}.csv'.format(DATATYPE),'a') as b, \
+                 open('./ProjectData/{0}/IndividualSignals/gyro_z_{0}.csv'.format(DATATYPE),'a') as c:
                 a.write("{}\n".format(rawVals[0]))
                 b.write("{}\n".format(rawVals[1]))
                 c.write("{}\n".format(rawVals[2]))
@@ -200,10 +202,10 @@ class BarometerSensor(Sensor):
             (tL, tM, tH, pL, pM, pH) = struct.unpack('<BBBBBB', data)
             temp = (tH*65536 + tM*256 + tL) / 100.0
             press = (pH*65536 + pM*256 + pL) / 100.0
-            with open('./ProjectData/IndividualSignals/baro.csv','a') as f:
+            with open('./ProjectData/{0}/IndividualSignals/baro_{0}.csv'.format(DATATYPE),'a') as f:
                 f.write(str(press)) 
                 f.write('\n') 
-            with open('./ProjectData/y.csv','a') as f:
+            with open('./ProjectData/{0}/y_{0}.csv'.format(DATATYPE),'a') as f:
                 f.write(LABEL) 
                 f.write('\n') 
             
