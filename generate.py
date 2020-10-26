@@ -16,7 +16,13 @@ import csv
 from bleak import BleakClient
 
 # 1: Nod, 2: Shake, 3: Look up, 4: Tilt
-LABEL = '1'
+LABEL = '2'
+LABELTOACTION = {
+    '1': 'Nod',
+    '2': 'Shake',
+    '3': 'Look up',
+    '4': 'Tilt',
+}
 # Coordination global variable
 READY = -1
 # Datatype: test or train
@@ -303,6 +309,16 @@ if __name__ == "__main__":
         if platform.system() != "Darwin"
         else "6FFBA6AE-0802-4D92-B1CD-041BE4B4FEB9"
     )
+    print("Generating data for {}, get ready to {}".format(LABEL, LABELTOACTION[LABEL]))
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(run(address))
-    loop.run_forever()
+    
+    try:
+        loop.run_until_complete(run(address))
+        loop.run_forever()
+    except KeyboardInterrupt:
+        loop.stop()
+        loop.close()
+        print("Received exit, exiting...")
+    # finally:
+        
+    

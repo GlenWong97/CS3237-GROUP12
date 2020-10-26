@@ -46,7 +46,7 @@ from matplotlib import pyplot
 
 def load_file(filepath):
     dataframe = read_csv(filepath, header=None, delim_whitespace=False)
-    print(dataframe)
+    # print(dataframe)
     return dataframe.values
 
 
@@ -94,24 +94,33 @@ def load_dataset_group(group, prefix=''):
 def load_dataset(prefix=''):
     # load all train
     trainX, trainy = load_dataset_group('train', prefix + 'ProjectData/')
-    print(trainX.shape, trainy.shape)
+    # print(trainX.shape, trainy.shape)
+    
     # load all test
     testX, testy = load_dataset_group('test', prefix + 'ProjectData/')
-    print(testX.shape, testy.shape)
+    # print(testX.shape, testy.shape)
     # zero-offset class values
+    # print("trainy.shape (before zero-offset): {}".format(trainy))
+    # print("testy.shape (before zero-offset): {}".format(testy))
     trainy = trainy - 1
     testy = testy - 1
     # one hot encode y
-    trainy = to_categorical(trainy)
-    testy = to_categorical(testy)
-    print(trainX.shape, trainy.shape, testX.shape, testy.shape)
+    # print("trainy.shape (after zero-offset): {}".format(trainy))
+    # print("testy.shape (after zero-offset): {}".format(testy))
+    trainy = to_categorical(trainy , num_classes=2)
+    testy = to_categorical(testy, num_classes=2)
+    # print("trainX.shape: {}".format(trainX.shape))
+    # print("trainy.shape: {}".format(trainy))
+    # print("testX.shape: {}".format(testX.shape))
+    # print("testy.shape: {}".format(testy))
+    # print("n_timesteps, n_features, n_outputs", trainX.shape[1], trainX.shape[2], trainy.shape[1])
     return trainX, trainy, testX, testy
 
 
 # fit and evaluate a model
 
 def evaluate_model(trainX, trainy, testX, testy):
-    verbose, epochs, batch_size = 0, 15, 64
+    verbose, epochs, batch_size = 0, 15, 1
 #     verbose, epochs, batch_size = 0, 15, 3
     n_timesteps, n_features, n_outputs = trainX.shape[1], trainX.shape[2], trainy.shape[1]
     model = Sequential()
