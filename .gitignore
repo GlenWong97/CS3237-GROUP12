@@ -1,4 +1,2 @@
 sensortag_addr.txt
-sensortag.py
-test_test.txt
-test_test_test.py
+*.csv
