@@ -1,7 +1,5 @@
 sensortag_addr.txt
-ProjectData/test/IndividualSignals/*.csv
-ProjectData/train/IndividualSignals/*.csv
-ProjectData/test/*.csv
-ProjectData/train/*.csv
-!ProjectData/test/IndividualSignals/.gitkeep
-!ProjectData/train/IndividualSignals/.gitkeep
+test.py
+test_test.txt
+test_test_test.py
+lstm.py

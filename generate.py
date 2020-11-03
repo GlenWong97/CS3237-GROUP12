@@ -150,6 +150,7 @@ class AccelerometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
                     accel_count += 1
             print("[MovementSensor] Accelerometer:",
                   tuple([v*self.scale for v in rawVals]))
+            print(f"acc_x: {rawVals[0]}, acc_y: {rawVals[1]}, acc_z: {rawVals[2]}")
             self.count += 1
             if time() - self.start_time > 1:
                 print(f"accel count: {self.count}")
@@ -330,33 +331,32 @@ if __name__ == "__main__":
     """
 
     os.environ["PYTHONASYNCIODEBUG"] = str(1)
-    # try:
-    # with open(f"{sys.path[0]}/sensortag_addr.txt") as f:
-    address = (
-        # f.read()
-        "B0:91:22:F7:01:06"
-        if platform.system() != "Darwin"
-        else "6FFBA6AE-0802-4D92-B1CD-041BE4B4FEB9"
-    )
-
-    print("Generating data for {}, get ready to {}".format(LABEL, LABELTOACTION[LABEL]))
-
-    loop = asyncio.get_event_loop()
-
     try:
-        loop.run_until_complete(run(address))
-        loop.run_forever()
-    except KeyboardInterrupt:
-        loop.stop()
-        loop.close()
-        print("Received exit, exiting...")
-    except Exception as e:
-        print(f"exception: {e}")
-        
-    finally:
-        loop.stop()
-        loop.close()
-        print("close")
-    # except FileNotFoundError:
-    #     print("no file named sensortag_addr.txt, create file and input sensortag MAC addr")
+        with open(f"{sys.path[0]}/sensortag_addr.txt") as f:
+            address = (
+                f.read() 
+                if platform.system() != "Darwin"
+                else "6FFBA6AE-0802-4D92-B1CD-041BE4B4FEB9"
+            )
+
+        print("Generating data for {}, get ready to {}".format(LABEL, LABELTOACTION[LABEL]))
+
+        loop = asyncio.get_event_loop()
+
+        try:
+            loop.run_until_complete(run(address))
+            loop.run_forever()
+        except KeyboardInterrupt:
+            loop.stop()
+            loop.close()
+            print("Received exit, exiting...")
+        except Exception as e:
+            print(f"exception: {e}")
+            
+        # finally:
+        #     loop.stop()
+        #     loop.close()
+        #     print("close")
+    except FileNotFoundError:
+        print("no file named sensortag_addr.txt, create file and input sensortag MAC addr")
     
