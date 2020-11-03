@@ -1,5 +1,5 @@
 sensortag_addr.txt
-test/*.csv
-train/*.csv
-!test/IndividualSignals/.gitkeep
-!train/IndividualSignals/.gitkeep
+*.csv
+*.csv
+!ProjectData/test/IndividualSignals/.gitkeep
+!ProjectData/train/IndividualSignals/.gitkeep
