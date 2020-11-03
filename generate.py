@@ -8,11 +8,14 @@ Adapted by Ashwin from the following sources:
  - https://github.com/hbldh/bleak/blob/develop/examples/sensortag.py
 
 """
+import sys
+import os
 import asyncio
 import platform
 import struct
 import csv
 
+from time import time
 from bleak import BleakClient
 
 # 1: Nod, 2: Shake, 3: Look up, 4: Tilt
@@ -30,7 +33,6 @@ DATATYPE = "train"
 
 # Number of timesteps for lstm
 TIMESTEPS = 2
-
 accel_count = 0
 gryo_count = 0
 mag_count = 0
@@ -119,6 +121,8 @@ class AccelerometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
         super().__init__()
         self.bits = MovementSensorMPU9250.ACCEL_XYZ | MovementSensorMPU9250.ACCEL_RANGE_4G
         self.scale = 8.0/32768.0  # TODO: why not 4.0, as documented? @Ashwin Need to verify
+        self.start_time = 0.0
+        self.count = 0
 
     def cb_sensor(self, data):
         '''Returns (x_accel, y_accel, z_accel) in units of g'''
@@ -146,6 +150,10 @@ class AccelerometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
                     accel_count += 1
             print("[MovementSensor] Accelerometer:",
                   tuple([v*self.scale for v in rawVals]))
+            self.count += 1
+            if time() - self.start_time > 1:
+                print(f"accel count: {self.count}")
+                self.start_time = time()
 
 
 class MagnetometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
@@ -206,33 +214,6 @@ class GyroscopeSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
                     gryo_count += 1
                 print("[MovementSensor] Gyroscope:", tuple(
                     [v*self.scale for v in rawVals]))
-
-
-class OpticalSensor(Sensor):
-    def __init__(self):
-        super().__init__()
-        self.data_uuid = "f000aa71-0451-4000-b000-000000000000"
-        self.ctrl_uuid = "f000aa72-0451-4000-b000-000000000000"
-
-    def callback(self, sender: int, data: bytearray):
-        raw = struct.unpack('<h', data)[0]
-        m = raw & 0xFFF
-        e = (raw & 0xF000) >> 12
-        print("[OpticalSensor] Reading from light sensor:", 0.01 * (m << e))
-
-
-class HumiditySensor(Sensor):
-    def __init__(self):
-        super().__init__()
-        self.data_uuid = "f000aa21-0451-4000-b000-000000000000"
-        self.ctrl_uuid = "f000aa22-0451-4000-b000-000000000000"
-
-    def callback(self, sender: int, data: bytearray):
-        (rawT, rawH) = struct.unpack('<HH', data)
-        temp = -40.0 + 165.0 * (rawT / 65536.0)
-        RH = 100.0 * (rawH/65536.0)
-        print(
-            f"[HumiditySensor] Ambient temp: {temp}; Relative Humidity: {RH}")
 
 
 class BarometerSensor(Sensor):
@@ -348,16 +329,18 @@ if __name__ == "__main__":
     file which was provided as an example from bleak to identify the sensor tag device
     """
 
-    import os
-
     os.environ["PYTHONASYNCIODEBUG"] = str(1)
+    # try:
+    # with open(f"{sys.path[0]}/sensortag_addr.txt") as f:
     address = (
-        "54:6C:0E:52:F5:0F"
+        # f.read()
+        "B0:91:22:F7:01:06"
         if platform.system() != "Darwin"
         else "6FFBA6AE-0802-4D92-B1CD-041BE4B4FEB9"
     )
-    print("Generating data for {}, get ready to {}".format(
-        LABEL, LABELTOACTION[LABEL]))
+
+    print("Generating data for {}, get ready to {}".format(LABEL, LABELTOACTION[LABEL]))
+
     loop = asyncio.get_event_loop()
 
     try:
@@ -367,4 +350,13 @@ if __name__ == "__main__":
         loop.stop()
         loop.close()
         print("Received exit, exiting...")
-    # finally:
+    except Exception as e:
+        print(f"exception: {e}")
+        
+    finally:
+        loop.stop()
+        loop.close()
+        print("close")
+    # except FileNotFoundError:
+    #     print("no file named sensortag_addr.txt, create file and input sensortag MAC addr")
+    
