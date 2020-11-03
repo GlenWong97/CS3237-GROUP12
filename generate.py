@@ -352,7 +352,7 @@ if __name__ == "__main__":
 
     os.environ["PYTHONASYNCIODEBUG"] = str(1)
     address = (
-        "54:6C:0E:52:F5:0F"
+        "B0:91:22:F7:01:06"
         if platform.system() != "Darwin"
         else "6FFBA6AE-0802-4D92-B1CD-041BE4B4FEB9"
     )
