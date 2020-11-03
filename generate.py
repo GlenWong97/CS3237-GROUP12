@@ -135,14 +135,14 @@ class AccelerometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
                     open('./ProjectData/{0}/IndividualSignals/acc_y_{0}.csv'.format(DATATYPE), 'a') as b, \
                     open('./ProjectData/{0}/IndividualSignals/acc_z_{0}.csv'.format(DATATYPE), 'a') as c:
                 if accel_count == TIMESTEPS - 1:
-                    a.write("{}\n".format(rawVals[0]))
-                    b.write("{}\n".format(rawVals[1]))
-                    c.write("{}\n".format(rawVals[2]))
+                    a.write("{}\n".format(rawVals[0]*self.scale))
+                    b.write("{}\n".format(rawVals[1]*self.scale))
+                    c.write("{}\n".format(rawVals[2]*self.scale))
                     accel_count = 0
                 else:
-                    a.write("{},".format(rawVals[0]))
-                    b.write("{},".format(rawVals[1]))
-                    c.write("{},".format(rawVals[2]))
+                    a.write("{},".format(rawVals[0]*self.scale))
+                    b.write("{},".format(rawVals[1]*self.scale))
+                    c.write("{},".format(rawVals[2]*self.scale))
                     accel_count += 1
             print("[MovementSensor] Accelerometer:",
                   tuple([v*self.scale for v in rawVals]))
@@ -166,14 +166,14 @@ class MagnetometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
                     open('./ProjectData/{0}/IndividualSignals/mag_y_{0}.csv'.format(DATATYPE), 'a') as b, \
                     open('./ProjectData/{0}/IndividualSignals/mag_z_{0}.csv'.format(DATATYPE), 'a') as c:
                 if mag_count == TIMESTEPS - 1:
-                    a.write("{}\n".format(rawVals[0]))
-                    b.write("{}\n".format(rawVals[1]))
-                    c.write("{}\n".format(rawVals[2]))
+                    a.write("{}\n".format(rawVals[0]*self.scale))
+                    b.write("{}\n".format(rawVals[1]*self.scale))
+                    c.write("{}\n".format(rawVals[2]*self.scale))
                     mag_count = 0
                 else:
-                    a.write("{},".format(rawVals[0]))
-                    b.write("{},".format(rawVals[1]))
-                    c.write("{},".format(rawVals[2]))
+                    a.write("{},".format(rawVals[0]*self.scale))
+                    b.write("{},".format(rawVals[1]*self.scale))
+                    c.write("{},".format(rawVals[2]*self.scale))
                     mag_count += 1
             print("[MovementSensor] Magnetometer:",
                   tuple([v*self.scale for v in rawVals]))
@@ -195,14 +195,14 @@ class GyroscopeSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
                     open('./ProjectData/{0}/IndividualSignals/gyro_y_{0}.csv'.format(DATATYPE), 'a') as b, \
                     open('./ProjectData/{0}/IndividualSignals/gyro_z_{0}.csv'.format(DATATYPE), 'a') as c:
                 if gryo_count == TIMESTEPS - 1:
-                    a.write("{}\n".format(rawVals[0]))
-                    b.write("{}\n".format(rawVals[1]))
-                    c.write("{}\n".format(rawVals[2]))
+                    a.write("{}\n".format(rawVals[0]*self.scale))
+                    b.write("{}\n".format(rawVals[1]*self.scale))
+                    c.write("{}\n".format(rawVals[2]*self.scale))
                     gryo_count = 0
                 else:
-                    a.write("{},".format(rawVals[0]))
-                    b.write("{},".format(rawVals[1]))
-                    c.write("{},".format(rawVals[2]))
+                    a.write("{},".format(rawVals[0]*self.scale))
+                    b.write("{},".format(rawVals[1]*self.scale))
+                    c.write("{},".format(rawVals[2]*self.scale))
                     gryo_count += 1
                 print("[MovementSensor] Gyroscope:", tuple(
                     [v*self.scale for v in rawVals]))
