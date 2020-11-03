@@ -16,7 +16,7 @@ import csv
 from bleak import BleakClient
 
 # 1: Nod, 2: Shake, 3: Look up, 4: Tilt
-LABEL = '1'
+LABEL = '2'
 LABELTOACTION = {
     '1': 'Nod',
     '2': 'Shake',
@@ -259,8 +259,6 @@ class BarometerSensor(Sensor):
                 else:
                     barofile.write(str(press))
                     barofile.write(',')
-                    yfile.write(LABEL)
-                    yfile.write(',')
                     baro_count += 1
 
             print(
