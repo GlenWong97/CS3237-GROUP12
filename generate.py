@@ -38,6 +38,10 @@ gryo_count = 0
 mag_count = 0
 baro_count = 0
 
+accel_ready = False
+gyro_ready = False
+magneto_ready = False
+baro_ready = False
 
 class Service:
     """
@@ -54,6 +58,9 @@ class Service:
     def __init__(self):
         self.data_uuid = None
         self.ctrl_uuid = None
+        self.freq_uuid = None
+        self.ctrl_bits = bytearray([0x01])
+        self.freq_bits = bytearray([0x0A]) # 10hz
 
 
 class Sensor(Service):
@@ -62,9 +69,10 @@ class Sensor(Service):
         raise NotImplementedError()
 
     async def start_listener(self, client, *args):
+        print("entered here")
+        await client.write_gatt_char(self.freq_uuid, self.freq_bits)
         # start the sensor on the device
-        write_value = bytearray([0x01])
-        await client.write_gatt_char(self.ctrl_uuid, write_value)
+        await client.write_gatt_char(self.ctrl_uuid, self.ctrl_bits)
 
         # listen using the handler
         await client.start_notify(self.data_uuid, self.callback)
@@ -73,10 +81,10 @@ class Sensor(Service):
 class MovementSensorMPU9250SubService:
 
     def __init__(self):
-        self.bits = 0
+        self.ctrl_bits = 0
 
     def enable_bits(self):
-        return self.bits
+        return self.ctrl_bits
 
     def cb_sensor(self, data):
         raise NotImplementedError
@@ -87,14 +95,15 @@ class MovementSensorMPU9250(Sensor):
     ACCEL_XYZ = 7 << 3
     MAG_XYZ = 1 << 6
     ACCEL_RANGE_2G = 0 << 8
-    ACCEL_RANGE_4G = 1 << 8
-    ACCEL_RANGE_8G = 2 << 8
+    ACCEL_RANGE_4G = 2 << 8
+    ACCEL_RANGE_8G = 1 << 8
     ACCEL_RANGE_16G = 3 << 8
 
     def __init__(self):
         super().__init__()
         self.data_uuid = "f000aa81-0451-4000-b000-000000000000"
         self.ctrl_uuid = "f000aa82-0451-4000-b000-000000000000"
+        self.freq_uuid = "f000aa83-0451-4000-b000-000000000000"
         self.ctrlBits = 0
 
         self.sub_callbacks = []
@@ -104,6 +113,7 @@ class MovementSensorMPU9250(Sensor):
         self.sub_callbacks.append(cls_obj.cb_sensor)
 
     async def start_listener(self, client, *args):
+        await client.write_gatt_char(self.freq_uuid, self.freq_bits)
         # start the sensor on the device
         await client.write_gatt_char(self.ctrl_uuid, struct.pack("<H", self.ctrlBits))
 
@@ -119,15 +129,18 @@ class MovementSensorMPU9250(Sensor):
 class AccelerometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
     def __init__(self):
         super().__init__()
-        self.bits = MovementSensorMPU9250.ACCEL_XYZ | MovementSensorMPU9250.ACCEL_RANGE_4G
-        self.scale = 8.0/32768.0  # TODO: why not 4.0, as documented? @Ashwin Need to verify
+        self.ctrl_bits = MovementSensorMPU9250.ACCEL_XYZ | MovementSensorMPU9250.ACCEL_RANGE_8G
+        self.scale = 8.0/32768.0  # convert raw data to gravity ## sensortag user guide
         self.start_time = 0.0
-        self.count = 0
+        self.received = 0
+        self.scaledVals = []
 
     def cb_sensor(self, data):
         '''Returns (x_accel, y_accel, z_accel) in units of g'''
-        global accel_count
+        global accel_ready, gyro_ready, magneto_ready, baro_ready 
+        accel_ready = True
         rawVals = data[3:6]
+        self.scaledVals = [(x*self.scale) for x in rawVals]
         global READY
         READY += 1
         if READY == 0:
@@ -135,86 +148,123 @@ class AccelerometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
         elif READY == 1:
             print("Setup ready, please do your action...")
         elif READY >= 2:
-            with open('./ProjectData/{0}/IndividualSignals/acc_x_{0}.csv'.format(DATATYPE), 'a') as a, \
+        # if not (accel_ready and gyro_ready and magneto_ready and baro_ready):
+        #     return
+        # else:
+            self.save_values()
+            # print("[MovementSensor] Accelerometer:", tuple([v*self.scale for v in rawVals]))
+            # print(f"acc_x: {rawVals[0]}, acc_y: {rawVals[1]}, acc_z: {rawVals[2]}")
+            self.received += 1
+            if time() - self.start_time > 1:
+                print(f"accel count: {self.received}")
+                self.start_time = time()
+
+    def save_values(self):
+        global accel_count
+        with open('./ProjectData/{0}/IndividualSignals/acc_x_{0}.csv'.format(DATATYPE), 'a') as a, \
                     open('./ProjectData/{0}/IndividualSignals/acc_y_{0}.csv'.format(DATATYPE), 'a') as b, \
                     open('./ProjectData/{0}/IndividualSignals/acc_z_{0}.csv'.format(DATATYPE), 'a') as c:
-                if accel_count == TIMESTEPS - 1:
-                    a.write("{}\n".format(rawVals[0]))
-                    b.write("{}\n".format(rawVals[1]))
-                    c.write("{}\n".format(rawVals[2]))
-                    accel_count = 0
-                else:
-                    a.write("{},".format(rawVals[0]))
-                    b.write("{},".format(rawVals[1]))
-                    c.write("{},".format(rawVals[2]))
-                    accel_count += 1
-            print("[MovementSensor] Accelerometer:",
-                  tuple([v*self.scale for v in rawVals]))
-            print(f"acc_x: {rawVals[0]}, acc_y: {rawVals[1]}, acc_z: {rawVals[2]}")
-            self.count += 1
-            if time() - self.start_time > 1:
-                print(f"accel count: {self.count}")
-                self.start_time = time()
+            if accel_count == TIMESTEPS - 1:
+                a.write("{}\n".format(self.scaledVals[0]))
+                b.write("{}\n".format(self.scaledVals[1]))
+                c.write("{}\n".format(self.scaledVals[2]))
+                accel_count = 0
+            else:
+                a.write("{},".format(self.scaledVals[0]))
+                b.write("{},".format(self.scaledVals[1]))
+                c.write("{},".format(self.scaledVals[2]))
+                accel_count += 1
 
 
 class MagnetometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
     def __init__(self):
         super().__init__()
-        self.bits = MovementSensorMPU9250.MAG_XYZ
-        self.scale = 4912.0 / 32760
+        self.ctrl_bits = MovementSensorMPU9250.MAG_XYZ
+        self.scale = 4912.0 / 32760 # dont need to scale for magnetometer?
         # Reference: MPU-9250 register map v1.4
+        self.start_time = 0.0
+        self.received = 0
+        self.scaledVals = []
 
     def cb_sensor(self, data):
-        '''Returns (x_mag, y_mag, z_mag) in units of uT'''
-        global mag_count
+        '''Returns (x_mag, y_mag, z_mag) in units of uT, +- 4900'''
+        # global accel_ready, gyro_ready, magneto_ready, baro_ready 
+        # magneto_ready = True
         rawVals = data[6:9]
+        self.scaledVals = [(x*self.scale) for x in rawVals]
         global READY
 
+        # if not (accel_ready and gyro_ready and magneto_ready and baro_ready):
+        #     return
         if READY >= 2:
-            with open('./ProjectData/{0}/IndividualSignals/mag_x_{0}.csv'.format(DATATYPE), 'a') as a, \
+        # else:
+            self.save_values()
+            # print("[MovementSensor] Magnetometer:", tuple([v*self.scale for v in rawVals]))
+            self.received += 1
+            if time() - self.start_time > 1:
+                print(f"magneto count: {self.received}\n")
+                self.start_time = time()
+
+    def save_values(self):
+        global mag_count
+        with open('./ProjectData/{0}/IndividualSignals/mag_x_{0}.csv'.format(DATATYPE), 'a') as a, \
                     open('./ProjectData/{0}/IndividualSignals/mag_y_{0}.csv'.format(DATATYPE), 'a') as b, \
                     open('./ProjectData/{0}/IndividualSignals/mag_z_{0}.csv'.format(DATATYPE), 'a') as c:
-                if mag_count == TIMESTEPS - 1:
-                    a.write("{}\n".format(rawVals[0]))
-                    b.write("{}\n".format(rawVals[1]))
-                    c.write("{}\n".format(rawVals[2]))
-                    mag_count = 0
-                else:
-                    a.write("{},".format(rawVals[0]))
-                    b.write("{},".format(rawVals[1]))
-                    c.write("{},".format(rawVals[2]))
-                    mag_count += 1
-            print("[MovementSensor] Magnetometer:",
-                  tuple([v*self.scale for v in rawVals]))
+            if mag_count == TIMESTEPS - 1:
+                a.write("{}\n".format(self.scaledVals[0]))
+                b.write("{}\n".format(self.scaledVals[1]))
+                c.write("{}\n".format(self.scaledVals[2]))
+                mag_count = 0
+            else:
+                a.write("{},".format(self.scaledVals[0]))
+                b.write("{},".format(self.scaledVals[1]))
+                c.write("{},".format(self.scaledVals[2]))
+                mag_count += 1
 
 
 class GyroscopeSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
     def __init__(self):
         super().__init__()
-        self.bits = MovementSensorMPU9250.GYRO_XYZ
-        self.scale = 500.0/65536.0
+        self.ctrl_bits = MovementSensorMPU9250.GYRO_XYZ
+        self.scale = 500.0/65536.0 # convert to degrees/second ## sensortag user guide
+        self.start_time = 0.0
+        self.received = 0
+        self.scaledVals = []
 
     def cb_sensor(self, data):
         '''Returns (x_gyro, y_gyro, z_gyro) in units of degrees/sec'''
-        global gryo_count
+        # global accel_ready, gyro_ready, magneto_ready, baro_ready 
+        # gyro_ready = True
         rawVals = data[0:3]
+        self.scaledVals = [(x*self.scale) for x in rawVals]
         global READY
+
+        # if not (accel_ready and gyro_ready and magneto_ready and baro_ready):
+        #     return
         if READY >= 2:
-            with open('./ProjectData/{0}/IndividualSignals/gyro_x_{0}.csv'.format(DATATYPE), 'a') as a, \
+        # else:
+            self.save_values()
+            # print("[MovementSensor] Gyroscope:", tuple([v*self.scale for v in rawVals]))
+            self.received += 1
+            if time() - self.start_time > 1:
+                print(f"gyro count: {self.received}")
+                self.start_time = time()
+
+    def save_values(self):
+        global gryo_count
+        with open('./ProjectData/{0}/IndividualSignals/gyro_x_{0}.csv'.format(DATATYPE), 'a') as a, \
                     open('./ProjectData/{0}/IndividualSignals/gyro_y_{0}.csv'.format(DATATYPE), 'a') as b, \
                     open('./ProjectData/{0}/IndividualSignals/gyro_z_{0}.csv'.format(DATATYPE), 'a') as c:
-                if gryo_count == TIMESTEPS - 1:
-                    a.write("{}\n".format(rawVals[0]))
-                    b.write("{}\n".format(rawVals[1]))
-                    c.write("{}\n".format(rawVals[2]))
-                    gryo_count = 0
-                else:
-                    a.write("{},".format(rawVals[0]))
-                    b.write("{},".format(rawVals[1]))
-                    c.write("{},".format(rawVals[2]))
-                    gryo_count += 1
-                print("[MovementSensor] Gyroscope:", tuple(
-                    [v*self.scale for v in rawVals]))
+            if gryo_count == TIMESTEPS - 1:
+                a.write("{}\n".format(self.scaledVals[0]))
+                b.write("{}\n".format(self.scaledVals[1]))
+                c.write("{}\n".format(self.scaledVals[2]))
+                gryo_count = 0
+            else:
+                a.write("{},".format(self.scaledVals[0]))
+                b.write("{},".format(self.scaledVals[1]))
+                c.write("{},".format(self.scaledVals[2]))
+                gryo_count += 1
 
 
 class BarometerSensor(Sensor):
@@ -222,29 +272,45 @@ class BarometerSensor(Sensor):
         super().__init__()
         self.data_uuid = "f000aa41-0451-4000-b000-000000000000"
         self.ctrl_uuid = "f000aa42-0451-4000-b000-000000000000"
+        self.freq_uuid = "f000aa44-0451-4000-b000-000000000000"
+        self.start_time = 0.0
+        self.press = 0.0
+        self.received = 0
 
     def callback(self, sender: int, data: bytearray):
+        # global accel_ready, gyro_ready, magneto_ready, baro_ready
+        # baro_ready = True
         global READY
-        global baro_count
-        if READY >= 1:
-            (tL, tM, tH, pL, pM, pH) = struct.unpack('<BBBBBB', data)
-            temp = (tH*65536 + tM*256 + tL) / 100.0
-            press = (pH*65536 + pM*256 + pL) / 100.0
-            with open('./ProjectData/{0}/IndividualSignals/baro_{0}.csv'.format(DATATYPE), 'a') as barofile,\
-                    open('./ProjectData/{0}/y_{0}.csv'.format(DATATYPE), 'a') as yfile:
-                if baro_count == TIMESTEPS - 1:
-                    barofile.write(str(press))
-                    barofile.write('\n')
-                    yfile.write(LABEL)
-                    yfile.write('\n')
-                    baro_count = 0
-                else:
-                    barofile.write(str(press))
-                    barofile.write(',')
-                    baro_count += 1
 
-            print(
-                f"[BarometerSensor] Ambient temp: {temp}; Pressure Millibars: {press}")
+        # if not (accel_ready and gyro_ready and magneto_ready and baro_ready):
+        #     return
+        if READY >= 1:
+        # else:
+            (_, _, _, pL, pM, pH) = struct.unpack('<BBBBBB', data)
+            # temp = (tH*65536 + tM*256 + tL) / 100.0
+            self.press = (pH*65536 + pM*256 + pL) / 100.0
+            self.save_values()
+            # print(f"[BarometerSensor] Ambient temp: {temp}; Pressure Millibars: {press}")
+            self.received += 1
+            if time() - self.start_time > 1:
+                    print(f"baro count: {self.received}")
+                    self.start_time = time()
+
+    def save_values(self):
+        global baro_count
+        with open('./ProjectData/{0}/IndividualSignals/baro_{0}.csv'.format(DATATYPE), 'a') as barofile,\
+                    open('./ProjectData/{0}/y_{0}.csv'.format(DATATYPE), 'a') as yfile:
+            if baro_count == TIMESTEPS - 1:
+                barofile.write(str(self.press))
+                barofile.write('\n')
+                yfile.write(LABEL)
+                yfile.write('\n')
+                baro_count = 0
+            else:
+                barofile.write(str(self.press))
+                barofile.write(',')
+                baro_count += 1
+            
 
 
 class LEDAndBuzzer(Service):
@@ -283,12 +349,6 @@ async def run(address):
         print("Connected: {0}".format(x))
 
         led_and_buzzer = LEDAndBuzzer()
-
-        # light_sensor = OpticalSensor()
-        # await light_sensor.start_listener(client)
-
-        # humidity_sensor = HumiditySensor()
-        # await humidity_sensor.start_listener(client)
 
         barometer_sensor = BarometerSensor()
         await barometer_sensor.start_listener(client)
