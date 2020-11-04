@@ -38,11 +38,6 @@ gryo_count = 0
 mag_count = 0
 baro_count = 0
 
-accel_ready = False
-gyro_ready = False
-magneto_ready = False
-baro_ready = False
-
 class Service:
     """
     Here is a good documentation about the concepts in ble;
@@ -60,8 +55,8 @@ class Service:
         self.ctrl_uuid = None
         self.freq_uuid = None
         self.ctrl_bits = bytearray([0x01])
-        self.freq_bits = bytearray([0x0A]) # 10hz
-
+        self.freq_bits = bytearray([0x64]) # 1hz
+        # self.freq_bits = bytearray([0x0A]) # 10hz
 
 class Sensor(Service):
 
@@ -69,7 +64,6 @@ class Sensor(Service):
         raise NotImplementedError()
 
     async def start_listener(self, client, *args):
-        print("entered here")
         await client.write_gatt_char(self.freq_uuid, self.freq_bits)
         # start the sensor on the device
         await client.write_gatt_char(self.ctrl_uuid, self.ctrl_bits)
@@ -137,8 +131,6 @@ class AccelerometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
 
     def cb_sensor(self, data):
         '''Returns (x_accel, y_accel, z_accel) in units of g'''
-        global accel_ready, gyro_ready, magneto_ready, baro_ready 
-        accel_ready = True
         rawVals = data[3:6]
         self.scaledVals = [(x*self.scale) for x in rawVals]
         global READY
@@ -148,9 +140,6 @@ class AccelerometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
         elif READY == 1:
             print("Setup ready, please do your action...")
         elif READY >= 2:
-        # if not (accel_ready and gyro_ready and magneto_ready and baro_ready):
-        #     return
-        # else:
             self.save_values()
             # print("[MovementSensor] Accelerometer:", tuple([v*self.scale for v in rawVals]))
             # print(f"acc_x: {rawVals[0]}, acc_y: {rawVals[1]}, acc_z: {rawVals[2]}")
@@ -188,16 +177,11 @@ class MagnetometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
 
     def cb_sensor(self, data):
         '''Returns (x_mag, y_mag, z_mag) in units of uT, +- 4900'''
-        # global accel_ready, gyro_ready, magneto_ready, baro_ready 
-        # magneto_ready = True
         rawVals = data[6:9]
         self.scaledVals = [(x*self.scale) for x in rawVals]
         global READY
 
-        # if not (accel_ready and gyro_ready and magneto_ready and baro_ready):
-        #     return
         if READY >= 2:
-        # else:
             self.save_values()
             # print("[MovementSensor] Magnetometer:", tuple([v*self.scale for v in rawVals]))
             self.received += 1
@@ -233,16 +217,11 @@ class GyroscopeSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
 
     def cb_sensor(self, data):
         '''Returns (x_gyro, y_gyro, z_gyro) in units of degrees/sec'''
-        # global accel_ready, gyro_ready, magneto_ready, baro_ready 
-        # gyro_ready = True
         rawVals = data[0:3]
         self.scaledVals = [(x*self.scale) for x in rawVals]
         global READY
 
-        # if not (accel_ready and gyro_ready and magneto_ready and baro_ready):
-        #     return
         if READY >= 2:
-        # else:
             self.save_values()
             # print("[MovementSensor] Gyroscope:", tuple([v*self.scale for v in rawVals]))
             self.received += 1
@@ -278,14 +257,10 @@ class BarometerSensor(Sensor):
         self.received = 0
 
     def callback(self, sender: int, data: bytearray):
-        # global accel_ready, gyro_ready, magneto_ready, baro_ready
-        # baro_ready = True
+
         global READY
 
-        # if not (accel_ready and gyro_ready and magneto_ready and baro_ready):
-        #     return
         if READY >= 1:
-        # else:
             (_, _, _, pL, pM, pH) = struct.unpack('<BBBBBB', data)
             # temp = (tH*65536 + tM*256 + tL) / 100.0
             self.press = (pH*65536 + pM*256 + pL) / 100.0
