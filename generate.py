@@ -28,15 +28,18 @@ LABELTOACTION = {
 }
 # Coordination global variable
 READY = -1
+# remove number of data to ensure parallel
+START_THRESHOLD = 50
 # Datatype: test or train
 DATATYPE = "train"
 
 # Number of timesteps for lstm
-TIMESTEPS = 2
+TIMESTEPS = 10
 accel_count = 0
 gryo_count = 0
 mag_count = 0
 baro_count = 0
+useful_data = 0
 
 class Service:
     """
@@ -55,8 +58,8 @@ class Service:
         self.ctrl_uuid = None
         self.freq_uuid = None
         self.ctrl_bits = bytearray([0x01])
-        self.freq_bits = bytearray([0x64]) # 1hz
-        # self.freq_bits = bytearray([0x0A]) # 10hz
+        # self.freq_bits = bytearray([0x64]) # 1hz
+        self.freq_bits = bytearray([0x0A]) # 10hz
 
 class Sensor(Service):
 
@@ -131,15 +134,17 @@ class AccelerometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
 
     def cb_sensor(self, data):
         '''Returns (x_accel, y_accel, z_accel) in units of g'''
-        rawVals = data[3:6]
-        self.scaledVals = [(x*self.scale) for x in rawVals]
-        global READY
+        global READY, useful_data
         READY += 1
         if READY == 0:
             print("Setup not ready, please wait...")
         elif READY == 1:
             print("Setup ready, please do your action...")
         elif READY >= 2:
+            if useful_data < START_THRESHOLD:
+                return
+            rawVals = data[3:6]
+            self.scaledVals = [(x*self.scale) for x in rawVals]
             self.save_values()
             # print("[MovementSensor] Accelerometer:", tuple([v*self.scale for v in rawVals]))
             # print(f"acc_x: {rawVals[0]}, acc_y: {rawVals[1]}, acc_z: {rawVals[2]}")
@@ -177,16 +182,18 @@ class MagnetometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
 
     def cb_sensor(self, data):
         '''Returns (x_mag, y_mag, z_mag) in units of uT, +- 4900'''
-        rawVals = data[6:9]
-        self.scaledVals = [(x*self.scale) for x in rawVals]
-        global READY
+        global READY, useful_data
 
         if READY >= 2:
+            if useful_data < START_THRESHOLD:
+                return
+            rawVals = data[6:9]
+            self.scaledVals = [(x*self.scale) for x in rawVals]
             self.save_values()
             # print("[MovementSensor] Magnetometer:", tuple([v*self.scale for v in rawVals]))
             self.received += 1
             if time() - self.start_time > 1:
-                print(f"magneto count: {self.received}\n")
+                print(f"magneto count: {self.received}")
                 self.start_time = time()
 
     def save_values(self):
@@ -217,11 +224,13 @@ class GyroscopeSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
 
     def cb_sensor(self, data):
         '''Returns (x_gyro, y_gyro, z_gyro) in units of degrees/sec'''
-        rawVals = data[0:3]
-        self.scaledVals = [(x*self.scale) for x in rawVals]
-        global READY
+        global READY, useful_data
 
         if READY >= 2:
+            if useful_data < START_THRESHOLD:
+                return
+            rawVals = data[0:3]
+            self.scaledVals = [(x*self.scale) for x in rawVals]
             self.save_values()
             # print("[MovementSensor] Gyroscope:", tuple([v*self.scale for v in rawVals]))
             self.received += 1
@@ -258,9 +267,13 @@ class BarometerSensor(Sensor):
 
     def callback(self, sender: int, data: bytearray):
 
-        global READY
+        global READY, useful_data
 
         if READY >= 1:
+            useful_data += 1
+            if useful_data < START_THRESHOLD:
+                print(f"countdown to start: {START_THRESHOLD - useful_data}")
+                return
             (_, _, _, pL, pM, pH) = struct.unpack('<BBBBBB', data)
             # temp = (tH*65536 + tM*256 + tL) / 100.0
             self.press = (pH*65536 + pM*256 + pL) / 100.0
