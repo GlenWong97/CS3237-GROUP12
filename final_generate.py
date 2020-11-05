@@ -205,7 +205,7 @@ async def run(address):
         m_sensor = await movement_sensor.enable(client)
         global val_count, useful_data, write_count
 
-        while True:
+        while (write_count < 50):
             # await asyncio.sleep(0.08)
             data1 = await barometer_sensor.read(client)
             data2 = await m_sensor.read(client)
@@ -261,6 +261,8 @@ async def run(address):
                     baro_file.write("{},".format(data1))
                     val_count += 1
                     write_count += 1
+            
+        print("Finished training...")
 
 
 if __name__ == "__main__":
@@ -285,7 +287,7 @@ if __name__ == "__main__":
 
         try:
             loop.run_until_complete(run(address))
-            loop.run_forever()
+            # loop.run_forever()
         except KeyboardInterrupt:
             loop.stop()
             loop.close()

@@ -35,7 +35,8 @@ LABELTOACTION = {
 DATATYPE = "test"
 MODEL_NAME = 'lstm_model.hd5'
 loaded_model = None
-dict = {0: 'IDLE', 1: 'NOD', 2: 'SHAKE'}
+# dict = {0: 'IDLE', 1: 'NOD', 2: 'SHAKE'}
+dict = {0: 'NOD', 1: 'SHAKE'}
 
 ACC_X_BUFFER = []
 ACC_Y_BUFFER = []
