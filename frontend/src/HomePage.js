@@ -1,22 +1,15 @@
 import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
-import Layout from '../Templates/Layout';
+import Layout from './Templates/Layout';
 
 // import { API_HOST } from '../consts';
 
 var mqtt    = require('mqtt');
-var options = {
-    protocol: 'mqtts',
-    clientId: 'b0908853'    
-};
-var client  = mqtt.connect('mqtt://test.mosquitto.org:8081', options);
-
-// preciouschicken.com is the MQTT topic
-client.subscribe('preciouschicken.com');
-
+var client  = mqtt.connect('mqtt://test.mosquitto.org:8081', {protocol:'mqtts'});
+client.subscribe('myTest');
+// mosquitto_pub -t 'myTest' -h 'test.mosquitto.org' -m 'Your message heresdsds!'
 
 const HomePage = () => {
-  const [message, setMessage] = useState('All output will be displayed here.');
 
   var note;
   client.on('message', function (topic, message) {
@@ -26,6 +19,9 @@ const HomePage = () => {
     console.log(note);
     client.end();
     });
+
+  const [message, setMessage] = useState('All output will be displayed here.');
+
 
   return (
     <Layout>
