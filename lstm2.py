@@ -15,13 +15,19 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.models import Sequential, load_model
 from matplotlib import pyplot
 
-MODEL_NAME='lstm_model.hd5'
+MODEL_NAME = 'lstm_model.hd5'
+
+# number of classes to classify, for now is 3 (idle, nod, shake)
+NUM_CLASSES = 3
+
 
 def load_file(filepath):
     dataframe = read_csv(filepath, header=None, delim_whitespace=False)
     return dataframe.values
 
 # load a list of files and return as a 3d numpy array
+
+
 def load_group(filenames, prefix=''):
     loaded = list()
     for name in filenames:
@@ -62,7 +68,7 @@ def load_dataset_group(group, prefix=''):
 def load_dataset(prefix=''):
     # load all train
     trainX, trainy = load_dataset_group('train', prefix + 'ProjectData/')
-    
+
     # load all test
     testX, testy = load_dataset_group('test', prefix + 'ProjectData/')
 
@@ -70,25 +76,14 @@ def load_dataset(prefix=''):
     trainy = trainy - 1
     testy = testy - 1
     # one hot encode y
-    trainy = to_categorical(trainy , num_classes=2)
-    testy = to_categorical(testy, num_classes=2)
+    trainy = to_categorical(trainy, num_classes=NUM_CLASSES)
+    testy = to_categorical(testy, num_classes=NUM_CLASSES)
     return trainX, trainy, testX, testy
 
-def buildlstm(model_name, trainX, trainy, testX, testy):
-    if os.path.exists(model_name):
-        model = load_model(model_name)                                                                                             
-    else:
-        n_timesteps, n_features, n_outputs = trainX.shape[1], trainX.shape[2], trainy.shape[1]
-        model = Sequential()
-        model.add(LSTM(100, input_shape=(n_timesteps, n_features)))
-        model.add(Dropout(0.5))
-        model.add(Dense(100, activation='relu'))
-        model.add(Dense(n_outputs, activation='softmax'))
-    return model
 
 # fit and evaluate a model
 def train_lstm(model, train_x, train_y, epochs, test_x, test_y, model_name):
-    
+
     model.compile(loss='categorical_crossentropy',
                   optimizer='adam', metrics=['accuracy'])
 
@@ -98,21 +93,36 @@ def train_lstm(model, train_x, train_y, epochs, test_x, test_y, model_name):
     print("Starting training.")
 
     model.fit(x=train_x, y=train_y, batch_size=32,
-    validation_data=(test_x, test_y), shuffle=True,
-    epochs=epochs, 
-    callbacks=[savemodel, stopmodel])
+              validation_data=(test_x, test_y), shuffle=True,
+              epochs=epochs,
+              callbacks=[savemodel, stopmodel])
 
     print("Done. Now evaluating.")
     loss, acc = model.evaluate(x=test_x, y=test_y)
-    print("Test accuracy: %3.2f, loss: %3.2f"%(acc, loss)) 
+    print("Test accuracy: %3.2f, loss: %3.2f" % (acc, loss))
 
+
+def buildlstm(model_name, trainX, trainy, testX, testy):
+    if os.path.exists(model_name):
+        model = load_model(model_name)
+    else:
+        n_timesteps, n_features, n_outputs = trainX.shape[1], trainX.shape[2], trainy.shape[1]
+        model = Sequential()
+        model.add(LSTM(100, input_shape=(n_timesteps, n_features)))
+        model.add(Dropout(0.5))
+        model.add(Dense(100, activation='relu'))
+        model.add(Dense(n_outputs, activation='softmax'))
+    return model
 
 # run an experiment
+
+
 def run_experiment(repeats=10):
     # load data
     trainX, trainy, testX, testy = load_dataset()
     model = buildlstm(MODEL_NAME, trainX, trainy, testX, testy)
     train_lstm(model, trainX, trainy, 100, testX, testy, MODEL_NAME)
 
+
 # run the experiment
-run_experiment()    
+run_experiment()
