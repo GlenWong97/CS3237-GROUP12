@@ -34,6 +34,9 @@ const HelpPage = () => {
   
         </div>
       </div>
+      <br />
+      <br />
+
 
     </Layout>
   )};
