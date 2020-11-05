@@ -19,7 +19,7 @@ from time import time
 from bleak import BleakClient
 
 # 1: Nod, 2: Shake, 3: Look up, 4: Tilt
-LABEL = '2'
+LABEL = '4'
 LABELTOACTION = {
     '1': 'Nod',
     '2': 'Shake',
@@ -141,6 +141,7 @@ class AccelerometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
         elif READY == 1:
             print("Setup ready, please do your action...")
         elif READY >= 2:
+            READY = 2
             if useful_data < START_THRESHOLD:
                 return
             rawVals = data[3:6]
@@ -281,8 +282,8 @@ class BarometerSensor(Sensor):
             # print(f"[BarometerSensor] Ambient temp: {temp}; Pressure Millibars: {press}")
             self.received += 1
             if time() - self.start_time > 1:
-                    print(f"baro count: {self.received}")
-                    self.start_time = time()
+                print(f"baro count: {self.received}")
+                self.start_time = time()
 
     def save_values(self):
         global baro_count
