@@ -18,7 +18,7 @@ import sys
 from bleak import BleakClient
 
 # 0: Idle, 1: Nod, 2: Shake, 3: Look up, 4: Tilt
-LABEL = '2'
+LABEL = '1'
 LABELTOACTION = {
     '0': 'Idle',
     '1': 'Nod',
@@ -31,7 +31,7 @@ READY = -1
 # remove number of data to ensure parallel
 START_THRESHOLD = 5
 # Datatype: test or train
-DATATYPE = "train"
+DATATYPE = "test"
 
 # Number of timesteps for lstm
 TIMESTEPS = 5

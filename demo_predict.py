@@ -193,8 +193,15 @@ class lstm_model():
         data = self.load_dataset()
         global loaded_model
         result = loaded_model.predict(data)
+        print('predicted result: ', result)
         themax = numpy.argmax(result[0])
-        print("Predicted result: ", dict[themax])
+        confidence = 0.93
+        if (result[0][themax] < confidence):
+            prediction = 'IDLE'
+        else:
+            prediction = dict[themax]
+        
+        print("Predicted result: ", prediction)
 
         # Clearing buffers after making prediction
         BARO_BUFFER.clear()
@@ -242,7 +249,7 @@ async def run(address):
         model = lstm_model()
 
         # Iterations of data collection
-        timesteps = 10
+        timesteps = 5
 
         while True:
             for i in range(0, timesteps):
