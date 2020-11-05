@@ -26,7 +26,7 @@ LABELTOACTION = {
 # Coordination global variable
 READY = -1
 # Datatype: test or train
-DATATYPE = "train"
+DATATYPE = "test"
 
 class Service:
     """
