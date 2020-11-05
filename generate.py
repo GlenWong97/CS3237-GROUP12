@@ -31,7 +31,7 @@ READY = -1
 # remove number of data to ensure parallel
 START_THRESHOLD = 50
 # Datatype: test or train
-DATATYPE = "train"
+DATATYPE = "test"
 
 # Number of timesteps for lstm
 TIMESTEPS = 10
@@ -40,6 +40,7 @@ gryo_count = 0
 mag_count = 0
 baro_count = 0
 useful_data = 0
+
 
 class Service:
     """
@@ -59,7 +60,8 @@ class Service:
         self.freq_uuid = None
         self.ctrl_bits = bytearray([0x01])
         # self.freq_bits = bytearray([0x64]) # 1hz
-        self.freq_bits = bytearray([0x0A]) # 10hz
+        self.freq_bits = bytearray([0x0A])  # 10hz
+
 
 class Sensor(Service):
 
@@ -156,8 +158,8 @@ class AccelerometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
     def save_values(self):
         global accel_count
         with open('./ProjectData/{0}/IndividualSignals/acc_x_{0}.csv'.format(DATATYPE), 'a') as a, \
-                    open('./ProjectData/{0}/IndividualSignals/acc_y_{0}.csv'.format(DATATYPE), 'a') as b, \
-                    open('./ProjectData/{0}/IndividualSignals/acc_z_{0}.csv'.format(DATATYPE), 'a') as c:
+                open('./ProjectData/{0}/IndividualSignals/acc_y_{0}.csv'.format(DATATYPE), 'a') as b, \
+                open('./ProjectData/{0}/IndividualSignals/acc_z_{0}.csv'.format(DATATYPE), 'a') as c:
             if accel_count == TIMESTEPS - 1:
                 a.write("{}\n".format(self.scaledVals[0]))
                 b.write("{}\n".format(self.scaledVals[1]))
@@ -174,7 +176,7 @@ class MagnetometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
     def __init__(self):
         super().__init__()
         self.ctrl_bits = MovementSensorMPU9250.MAG_XYZ
-        self.scale = 4912.0 / 32760 # dont need to scale for magnetometer?
+        self.scale = 4912.0 / 32760  # dont need to scale for magnetometer?
         # Reference: MPU-9250 register map v1.4
         self.start_time = 0.0
         self.received = 0
@@ -199,8 +201,8 @@ class MagnetometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
     def save_values(self):
         global mag_count
         with open('./ProjectData/{0}/IndividualSignals/mag_x_{0}.csv'.format(DATATYPE), 'a') as a, \
-                    open('./ProjectData/{0}/IndividualSignals/mag_y_{0}.csv'.format(DATATYPE), 'a') as b, \
-                    open('./ProjectData/{0}/IndividualSignals/mag_z_{0}.csv'.format(DATATYPE), 'a') as c:
+                open('./ProjectData/{0}/IndividualSignals/mag_y_{0}.csv'.format(DATATYPE), 'a') as b, \
+                open('./ProjectData/{0}/IndividualSignals/mag_z_{0}.csv'.format(DATATYPE), 'a') as c:
             if mag_count == TIMESTEPS - 1:
                 a.write("{}\n".format(self.scaledVals[0]))
                 b.write("{}\n".format(self.scaledVals[1]))
@@ -217,7 +219,7 @@ class GyroscopeSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
     def __init__(self):
         super().__init__()
         self.ctrl_bits = MovementSensorMPU9250.GYRO_XYZ
-        self.scale = 500.0/65536.0 # convert to degrees/second ## sensortag user guide
+        self.scale = 500.0/65536.0  # convert to degrees/second ## sensortag user guide
         self.start_time = 0.0
         self.received = 0
         self.scaledVals = []
@@ -241,8 +243,8 @@ class GyroscopeSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
     def save_values(self):
         global gryo_count
         with open('./ProjectData/{0}/IndividualSignals/gyro_x_{0}.csv'.format(DATATYPE), 'a') as a, \
-                    open('./ProjectData/{0}/IndividualSignals/gyro_y_{0}.csv'.format(DATATYPE), 'a') as b, \
-                    open('./ProjectData/{0}/IndividualSignals/gyro_z_{0}.csv'.format(DATATYPE), 'a') as c:
+                open('./ProjectData/{0}/IndividualSignals/gyro_y_{0}.csv'.format(DATATYPE), 'a') as b, \
+                open('./ProjectData/{0}/IndividualSignals/gyro_z_{0}.csv'.format(DATATYPE), 'a') as c:
             if gryo_count == TIMESTEPS - 1:
                 a.write("{}\n".format(self.scaledVals[0]))
                 b.write("{}\n".format(self.scaledVals[1]))
@@ -281,13 +283,13 @@ class BarometerSensor(Sensor):
             # print(f"[BarometerSensor] Ambient temp: {temp}; Pressure Millibars: {press}")
             self.received += 1
             if time() - self.start_time > 1:
-                    print(f"baro count: {self.received}")
-                    self.start_time = time()
+                print(f"baro count: {self.received}")
+                self.start_time = time()
 
     def save_values(self):
         global baro_count
         with open('./ProjectData/{0}/IndividualSignals/baro_{0}.csv'.format(DATATYPE), 'a') as barofile,\
-                    open('./ProjectData/{0}/y_{0}.csv'.format(DATATYPE), 'a') as yfile:
+                open('./ProjectData/{0}/y_{0}.csv'.format(DATATYPE), 'a') as yfile:
             if baro_count == TIMESTEPS - 1:
                 barofile.write(str(self.press))
                 barofile.write('\n')
@@ -298,7 +300,6 @@ class BarometerSensor(Sensor):
                 barofile.write(str(self.press))
                 barofile.write(',')
                 baro_count += 1
-            
 
 
 class LEDAndBuzzer(Service):
@@ -382,12 +383,13 @@ if __name__ == "__main__":
     try:
         with open(f"{sys.path[0]}/sensortag_addr.txt") as f:
             address = (
-                f.read() 
+                f.read()
                 if platform.system() != "Darwin"
                 else "6FFBA6AE-0802-4D92-B1CD-041BE4B4FEB9"
             )
 
-        print("Generating data for {}, get ready to {}".format(LABEL, LABELTOACTION[LABEL]))
+        print("Generating data for {}, get ready to {}".format(
+            LABEL, LABELTOACTION[LABEL]))
 
         loop = asyncio.get_event_loop()
 
@@ -400,11 +402,10 @@ if __name__ == "__main__":
             print("Received exit, exiting...")
         except Exception as e:
             print(f"exception: {e}")
-            
+
         # finally:
         #     loop.stop()
         #     loop.close()
         #     print("close")
     except FileNotFoundError:
         print("no file named sensortag_addr.txt, create file and input sensortag MAC addr")
-    
