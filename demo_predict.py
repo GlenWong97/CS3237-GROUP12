@@ -272,21 +272,6 @@ async def run(address):
 
             model.predict()
 
-# def output_to_user():
-#     global prediction, temp_predict, predict_time
-#     if prediction != 'IDLE':
-#         temp_predict = prediction
-#         if time() - predict_time < 5:
-#             cprint(f"shown to user: {temp_predict}", 'green')
-#         else:
-#             cprint(f"shown to user: {prediction}", 'green')
-#     else:
-#         if temp_predict != 'IDLE':
-#             if time() - predict_time < 5:
-#                 cprint(f"shown to user: {temp_predict}", 'green')
-#             else:
-#                 cprint(f"shown to user: {prediction}", 'green')
-
 def output_to_user():
     global prediction, temp_predict, predict_time
     # print(f"temp predict is: {temp_predict}")
