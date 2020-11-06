@@ -1,3 +1,4 @@
 sensortag_addr.txt
 *.csv
 !.gitkeep
+.vscode
