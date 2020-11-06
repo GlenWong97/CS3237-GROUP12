@@ -210,6 +210,7 @@ class lstm_model():
         data = self.load_dataset()
         global loaded_model, prediction
         result = loaded_model.predict(data)
+        print('predicted result: ', result)
         themax = numpy.argmax(result[0])
         confidence = 0.93
         if (result[0][themax] < confidence):
