@@ -1,13 +1,8 @@
-# -*- coding: utf-8 -*-
-"""
-TI CC2650 SensorTag
--------------------
+import json
+import paho.mqtt.client as mqtt
+from os import listdir
+from os.path import join
 
-Adapted by Ashwin from the following sources:
- - https://github.com/IanHarvey/bluepy/blob/a7f5db1a31dba50f77454e036b5ee05c3b7e2d6e/bluepy/sensortag.py
- - https://github.com/hbldh/bleak/blob/develop/examples/sensortag.py
-
-"""
 import asyncio
 import platform
 import struct
@@ -20,27 +15,6 @@ from bleak import BleakClient
 from numpy import mean, std, dstack
 from pandas import read_csv
 from keras.models import Sequential, load_model
-from time import time
-from termcolor import cprint
-
-# 0: Idle1: Nod, 2: Shake, 3: Look up, 4: Tilt
-LABEL = '2'
-LABELTOACTION = {
-    '0': 'Idle',
-    '1': 'Nod',
-    '2': 'Shake',
-    '3': 'Look up',
-    '4': 'Tilt',
-}
-
-# Datatype: test or train
-DATATYPE = "test"
-MODEL_NAME = 'lstm_model.hd5'
-loaded_model = None
-# dict = {0: 'IDLE', 1: 'NOD', 2: 'SHAKE'}
-dict = {0: 'NOD', 1: 'SHAKE'}
-prediction, temp_predict = '', ''
-predict_time = 0.0
 
 ACC_X_BUFFER = []
 ACC_Y_BUFFER = []
@@ -53,16 +27,14 @@ MAG_Y_BUFFER = []
 MAG_Z_BUFFER = []
 BARO_BUFFER = []
 
+READY = False
 
 class Service:
 
     def __init__(self):
         self.data_uuid = None
         self.ctrl_uuid = None
-        # self.period_uuid = None
-        # self.freq_bits = bytearray([0x64]) # 1hz
         self.freq_bits = bytearray([0x0A])  # 10hz
-
 
 class Sensor(Service):
 
@@ -96,9 +68,9 @@ class MovementSensorMPU9250(Sensor):
     GYRO_XYZ = 7
     ACCEL_XYZ = 7 << 3
     MAG_XYZ = 1 << 6
-    ACCEL_RANGE_2G = 0 << 8
-    ACCEL_RANGE_4G = 1 << 8
-    ACCEL_RANGE_8G = 2 << 8
+    ACCEL_RANGE_2G  = 0 << 8
+    ACCEL_RANGE_4G  = 1 << 8
+    ACCEL_RANGE_8G  = 2 << 8
     ACCEL_RANGE_16G = 3 << 8
 
     def __init__(self):
@@ -128,9 +100,9 @@ class MovementSensorMPU9250(Sensor):
 
     async def read(self, client):
         val = await client.read_gatt_char(self.data_uuid)
-        return self.callback(1, val)
+        return self.callback(1, val)       
 
-
+        
 class GyroscopeSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
     def __init__(self):
         super().__init__()
@@ -147,12 +119,12 @@ class AccelerometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
     def __init__(self):
         super().__init__()
         self.bits = MovementSensorMPU9250.ACCEL_XYZ | MovementSensorMPU9250.ACCEL_RANGE_4G
-        self.scale = 8.0/32768.0
+        self.scale = 8.0/32768.0 
 
     def cb_sensor(self, data):
         '''Returns (x_accel, y_accel, z_accel) in units of g'''
         rawVals = data[3:6]
-        return [(x*self.scale) for x in rawVals]
+        return [(x*self.scale) for x in rawVals] 
 
 
 class MagnetometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
@@ -167,7 +139,6 @@ class MagnetometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
         rawVals = data[6:9]
         return [(x*self.scale) for x in rawVals]
 
-
 class BarometerSensor(Sensor):
     def __init__(self):
         super().__init__()
@@ -180,64 +151,70 @@ class BarometerSensor(Sensor):
         press = (pH*65536 + pM*256 + pL) / 100.0
         return press
 
+def on_connect(client, userdata, flags, rc):
+    if rc == 0:
+        print("Connected")
+        client.subscribe("Group_22/LSTM")
+    else:
+        print("Failed to connect. Error code: %d." % rc)
 
-class lstm_model():
 
-    def __init__(self):
-        global loaded_model
-        loaded_model = load_model(MODEL_NAME)
-        print("Model loaded, ready to predict")
+def on_message(client, userdata, msg):
+    print("Received message from server.")
+    resp_dict = json.loads(msg.payload)
+    print("Prediction: %s" % (resp_dict["prediction"]))
+    READY = True
 
-    # load the dataset, returns train and test X and y elements
-    def load_dataset(self):
-        # load all data
-        loaded = list()
-        loaded.append(ACC_X_BUFFER)
-        loaded.append(ACC_Y_BUFFER)
-        loaded.append(ACC_Z_BUFFER)
-        loaded.append(GYRO_X_BUFFER)
-        loaded.append(GYRO_Y_BUFFER)
-        loaded.append(GYRO_Z_BUFFER)
-        loaded.append(MAG_X_BUFFER)
-        loaded.append(MAG_X_BUFFER)
-        loaded.append(MAG_X_BUFFER)
-        loaded.append(BARO_BUFFER)
-        # stack group so that features are the 3rd dimension
-        data = dstack(loaded)
-        return data
 
-    def predict(self):
-        data = self.load_dataset()
-        global loaded_model, prediction
-        result = loaded_model.predict(data)
-        themax = numpy.argmax(result[0])
-        confidence = 0.93
-        if (result[0][themax] < confidence):
-            prediction = 'IDLE'
-        else:
-            prediction = dict[themax]
-        
-        print('----------------------')
-        print(f"predicted:      {prediction}")
-        output_to_user()
-        
-        # Clearing buffers after making prediction
-        BARO_BUFFER.clear()
-        GYRO_X_BUFFER.clear()
-        GYRO_Y_BUFFER.clear()
-        GYRO_Z_BUFFER.clear()
-        ACC_X_BUFFER.clear()
-        ACC_Y_BUFFER.clear()
-        ACC_Z_BUFFER.clear()
-        MAG_X_BUFFER.clear()
-        MAG_Y_BUFFER.clear()
-        MAG_Z_BUFFER.clear()
+def sending_motion(mqtt_client):
+    
+    # load all data
+    loaded = list()
+    loaded.append(ACC_X_BUFFER)
+    loaded.append(ACC_Y_BUFFER)
+    loaded.append(ACC_Z_BUFFER)
+    loaded.append(GYRO_X_BUFFER)
+    loaded.append(GYRO_Y_BUFFER)
+    loaded.append(GYRO_Z_BUFFER)
+    loaded.append(MAG_X_BUFFER)
+    loaded.append(MAG_X_BUFFER)
+    loaded.append(MAG_X_BUFFER)
+    loaded.append(BARO_BUFFER)
+    
+    # stack group so that features are the 3rd dimension
+    data = dstack(loaded)
+    data = data.tolist()
+    send_dict = {"data": data}
+    mqtt_client.publish("Group_22/LSTM", json.dumps(send_dict))
 
-async def run(address):
+    # Clearing buffers after making prediction
+    BARO_BUFFER.clear()
+    GYRO_X_BUFFER.clear()
+    GYRO_Y_BUFFER.clear()
+    GYRO_Z_BUFFER.clear()
+    ACC_X_BUFFER.clear()
+    ACC_Y_BUFFER.clear()
+    ACC_Z_BUFFER.clear()
+    MAG_X_BUFFER.clear()
+    MAG_Y_BUFFER.clear()
+    MAG_Z_BUFFER.clear()
+
+
+def setup(hostname):
+    client = mqtt.Client()
+    client.on_connect = on_connect
+    client.on_message = on_message
+    client.connect(hostname)
+    client.loop_start()
+    return client
+
+async def run(address, mqtt_client):
     async with BleakClient(address) as client:
+        global READY
+        READY = False
         x = await client.is_connected()
         print("Connected: {0}".format(x))
-
+        
         # Enabling sensors
         barometer_sensor = await BarometerSensor().enable(client)
         acc_sensor = AccelerometerSensorMovementSensorMPU9250()
@@ -248,83 +225,48 @@ async def run(address):
         movement_sensor.register(gyro_sensor)
         movement_sensor.register(magneto_sensor)
         m_sensor = await movement_sensor.enable(client)
-
-        # Initialise lstm model
-        model = lstm_model()
-
+        
         # Iterations of data collection
         timesteps = 5
 
-        while True:
-            for i in range(0, timesteps):
-                baro_reading = await barometer_sensor.read(client)
-                motion_reading = await m_sensor.read(client)
-                BARO_BUFFER.append(baro_reading)
-                GYRO_X_BUFFER.append(motion_reading[0])
-                GYRO_Y_BUFFER.append(motion_reading[1])
-                GYRO_Z_BUFFER.append(motion_reading[2])
-                ACC_X_BUFFER.append(motion_reading[3])
-                ACC_Y_BUFFER.append(motion_reading[4])
-                ACC_Z_BUFFER.append(motion_reading[5])
-                MAG_X_BUFFER.append(motion_reading[6])
-                MAG_Y_BUFFER.append(motion_reading[7])
-                MAG_Z_BUFFER.append(motion_reading[8])
+        print("Please perform action for 3 seconds.")
 
-            model.predict()
+        for i in range(0, timesteps):
+            baro_reading = await barometer_sensor.read(client)
+            motion_reading = await m_sensor.read(client)
+            BARO_BUFFER.append(baro_reading)
+            GYRO_X_BUFFER.append(motion_reading[0])
+            GYRO_Y_BUFFER.append(motion_reading[1])
+            GYRO_Z_BUFFER.append(motion_reading[2])
+            ACC_X_BUFFER.append(motion_reading[3])
+            ACC_Y_BUFFER.append(motion_reading[4])
+            ACC_Z_BUFFER.append(motion_reading[5])
+            MAG_X_BUFFER.append(motion_reading[6])
+            MAG_Y_BUFFER.append(motion_reading[7])
+            MAG_Z_BUFFER.append(motion_reading[8])
+            
+        sending_motion(mqtt_client)
 
-# def output_to_user():
-#     global prediction, temp_predict, predict_time
-#     if prediction != 'IDLE':
-#         temp_predict = prediction
-#         if time() - predict_time < 5:
-#             cprint(f"shown to user: {temp_predict}", 'green')
-#         else:
-#             cprint(f"shown to user: {prediction}", 'green')
-#     else:
-#         if temp_predict != 'IDLE':
-#             if time() - predict_time < 5:
-#                 cprint(f"shown to user: {temp_predict}", 'green')
-#             else:
-#                 cprint(f"shown to user: {prediction}", 'green')
+        while not READY:
+            pass  
 
-def output_to_user():
-    global prediction, temp_predict, predict_time
-    # print(f"temp predict is: {temp_predict}")
-    
-    if prediction == 'IDLE':
-        if temp_predict != 'IDLE':
-            if time() - predict_time < 5:
-                print(f"shown:          {temp_predict}")
-            else:
-                temp_predict = 'IDLE'
-                print(f"shown:          {prediction}")
-        else:
-            print(f"shown:          {temp_predict}")
-    else:
-        temp_predict = prediction
-        predict_time = time()
-        print(f"shown:          {temp_predict}")
-        
-    print('----------------------\n')
+if __name__ == '__main__':
 
-
-if __name__ == "__main__":
-    # os.system('color 7')
     os.environ["PYTHONASYNCIODEBUG"] = str(1)
     try:
         with open(f"{sys.path[0]}/sensortag_addr.txt") as f:
             address = (
-                f.read()
+                f.read() 
                 if platform.system() != "Darwin"
                 else "6FFBA6AE-0802-4D92-B1CD-041BE4B4FEB9"
             )
 
-        print("Predicting movement...")
-
         loop = asyncio.get_event_loop()
+        # Setting MQTT Client
+        mqtt_client = setup("127.0.0.1")
 
         try:
-            loop.run_until_complete(run(address))
+            loop.run_until_complete(run(address, mqtt_client= mqtt_client))
             loop.run_forever()
         except KeyboardInterrupt:
             loop.stop()
@@ -334,4 +276,4 @@ if __name__ == "__main__":
             print(f"exception: {e}")
 
     except FileNotFoundError:
-        print("no file named sensortag_addr.txt, create file and input sensortag MAC addr")
+        print("no file named sensortag_addr.txt, create file and input sensortag MAC addr")      
