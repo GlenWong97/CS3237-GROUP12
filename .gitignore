@@ -1,2 +1,3 @@
 sensortag_addr.txt
 *.csv
+!.gitkeep
