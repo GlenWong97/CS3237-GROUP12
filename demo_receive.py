@@ -1,5 +1,6 @@
 import numpy as np
 import json
+from time import time
 import paho.mqtt.client as mqtt
 import tensorflow as tf
 
@@ -12,7 +13,11 @@ from tensorflow.python.keras.backend import set_session
 MODEL_NAME='lstm_model.hd5'
 loaded_model = None
 
+prediction, temp_predict = '', ''
+predict_time = 0.0
+
 session = tf.compat.v1.Session(graph=tf.compat.v1.Graph())
+action = {0: 'Nod', 1: 'Shake'}
 
 # When calling load_model
 def loading_model():
@@ -26,25 +31,43 @@ def on_connect(client, userdata, flags, rc):
 	if rc == 0:
 		print("Successfully connected to broker")
 		print("Loading model... Do not send data!")
-		client.subscribe("Group_12/LSTM")
+		client.subscribe("Group_12/LSTM/classify")
 	else:
 		print("Connection failed with code: %d." % rc)
+
+def output_to_user():
+    global prediction, temp_predict, predict_time
+    
+    if prediction == 'IDLE':
+        if temp_predict != 'IDLE':
+            if time() - predict_time < 5:
+                return temp_predict
+            else:
+                temp_predict = 'IDLE'
+                return prediction
+        else:
+            return temp_predict
+    else:
+        temp_predict = prediction
+        predict_time = time()
+        return temp_predict
 
 # When predicting
 def predict(motion_data):
 	with session.graph.as_default():
 		set_session(session)
 		print("Start classifying")
-		global loaded_model
+		global loaded_model, prediction
 		result = loaded_model.predict(motion_data)
-		themax = numpy.argmax(result[0])
+		themax = np.argmax(result[0])
 		confidence = 0.93
 		if (result[0][themax] < confidence):
 			prediction = 'IDLE'
 		else:
-			prediction = dict[themax]
+			prediction = action[themax]
 		print("Done.")
-	return {"Prediction": prediction}
+		shown = output_to_user()
+	return {"Prediction": prediction, "Shown": shown}
 
 def on_message(client, userdata, msg):
 	# Payload is in msg. We convert it back to a Python dictionary.
@@ -54,7 +77,7 @@ def on_message(client, userdata, msg):
 	motion_data = np.array(recv_dict["data"])
 	result = predict(motion_data)
 	print("Sending results: ", result)
-	client.publish("Group_12/LSTM", json.dumps(result))
+	client.publish("Group_12/LSTM/predict", json.dumps(result))
 
 def setup(hostname):
 	client = mqtt.Client()
@@ -65,7 +88,7 @@ def setup(hostname):
 	return client
 
 def main():
-	setup("127.0.0.1")
+	setup("test.mosquitto.org")
 	with session.graph.as_default():
 		set_session(session)
 		loading_model()
