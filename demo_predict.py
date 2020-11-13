@@ -164,6 +164,19 @@ class MagnetometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
         return [(x*self.scale) for x in rawVals]
 
 
+class BarometerSensor(Sensor):
+    def __init__(self):
+        super().__init__()
+        self.data_uuid = "f000aa41-0451-4000-b000-000000000000"
+        self.ctrl_uuid = "f000aa42-0451-4000-b000-000000000000"
+        self.freq_uuid = "f000aa44-0451-4000-b000-000000000000"
+
+    def callback(self, sender: int, data: bytearray):
+        (tL, tM, tH, pL, pM, pH) = struct.unpack('<BBBBBB', data)
+        press = (pH*65536 + pM*256 + pL) / 100.0
+        return press
+
+
 class lstm_model():
 
     def __init__(self):
@@ -193,7 +206,6 @@ class lstm_model():
         data = self.load_dataset()
         global loaded_model
         result = loaded_model.predict(data)
-        print('predicted result: ', result)
         themax = numpy.argmax(result[0])
         confidence = 0.93
         if (result[0][themax] < confidence):
@@ -214,20 +226,6 @@ class lstm_model():
         MAG_X_BUFFER.clear()
         MAG_Y_BUFFER.clear()
         MAG_Z_BUFFER.clear()
-
-
-class BarometerSensor(Sensor):
-    def __init__(self):
-        super().__init__()
-        self.data_uuid = "f000aa41-0451-4000-b000-000000000000"
-        self.ctrl_uuid = "f000aa42-0451-4000-b000-000000000000"
-        self.freq_uuid = "f000aa44-0451-4000-b000-000000000000"
-
-    def callback(self, sender: int, data: bytearray):
-        (tL, tM, tH, pL, pM, pH) = struct.unpack('<BBBBBB', data)
-        press = (pH*65536 + pM*256 + pL) / 100.0
-        return press
-
 
 async def run(address):
     async with BleakClient(address) as client:
