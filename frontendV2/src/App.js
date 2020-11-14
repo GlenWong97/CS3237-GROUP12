@@ -17,11 +17,13 @@ const WebcamComponent = () => <Webcam
 
 var mqtt = require('mqtt');
 var client = mqtt.connect('mqtt://test.mosquitto.org:8081', { protocol: 'mqtts' });
-client.subscribe('Group_12/LSTM/predict');
+client.subscribe('Group_12/LSTM/predict/Glen');
+client.subscribe('Group_12/LSTM/predict/Sean');
+client.subscribe('Group_12/LSTM/predict/Nicholas');
+
 // SAMPLE: mosquitto_pub -t 'Group_12/LSTM/predict/Glen' -h 'test.mosquitto.org' -m '{ "Prediction": "SHAKE", "Shown": "SHAKE", "batterylife": 10}'
 // SAMPLE: mosquitto_pub -t 'Group_12/LSTM/predict/Sean' -h 'test.mosquitto.org' -m '{ "Prediction": "NOD", "Shown": "IDLE", "batterylife": 50}'
 // SAMPLE: mosquitto_pub -t 'Group_12/LSTM/predict/Nicholas' -h 'test.mosquitto.org' -m '{ "Prediction": "IDLE", "Shown": "IDLE", "batterylife": 100}'
-
 
 function App() {
   var note;
@@ -90,9 +92,9 @@ function App() {
       </div>
       <br />
 
-      {/* <div className="container-fluid text-center">
+      <div className="container-fluid text-center">
         <WebcamComponent/>
-      </div> */}
+      </div>
 
       <br />
 
