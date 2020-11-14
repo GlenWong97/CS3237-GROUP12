@@ -33,14 +33,17 @@ function App() {
     console.log(note)
 
     if (topic === 'Group_12/LSTM/predict/Glen') {
+      setStatusGlen("Online");
       setPredictedGlen(note['Prediction']);
       setShownGlen(note['Shown']);
       setBatteryLifeA(note['batterylife']);
      } else if (topic === 'Group_12/LSTM/predict/Sean') { 
+      setStatusSean("Online");
       setPredictedSean(note['Prediction']);
       setShownSean(note['Shown']);
       setBatteryLifeSean(note['batterylife']); 
     } else if (topic === 'Group_12/LSTM/predict/Nicholas') { 
+      setStatusNic("Online");
       setPredictedNic(note['Prediction']);
       setShownNic(note['Shown']);
       setBatteryLifeNic(note['batterylife']); 
@@ -49,17 +52,28 @@ function App() {
     }
   });
 
+  const [statusGlen, setStatusGlen] = useState("Offline");
   const [predictedGlen, setPredictedGlen] = useState("nothing heard");
   const [shownGlen, setShownGlen] = useState("nothing heard");
   const [batteryLifeA, setBatteryLifeA] = useState(0);
 
+  const [statusSean, setStatusSean] = useState("Offline");
   const [predictedSean, setPredictedSean] = useState("nothing heard");
   const [shownSean, setShownSean] = useState("nothing heard");
   const [batteryLifeSean, setBatteryLifeSean] = useState(0);
 
+  const [statusNic, setStatusNic] = useState("Offline");
   const [predictedNic, setPredictedNic] = useState("nothing heard");
   const [shownNic, setShownNic] = useState("nothing heard");
   const [batteryLifeNic, setBatteryLifeNic] = useState(0);
+
+  function selectColor(text) {
+    return text === 'Online' ? {"color": "green"} : {"color": "red"};
+  }
+
+  function isOnline(text) {
+    return text === "Online";
+  }
 
   return (
     <Layout>
@@ -102,7 +116,8 @@ function App() {
         <div className="inner-flex-top">
 
           <div className="flex-33 container fixed-bg-3 text-center">
-          <h1 className="text-center display-4 pb-3 pt-3"><b>Glen</b></h1>
+          <h4 className="text-left" style={selectColor(statusGlen)}><b>{statusGlen} <span className={`${isOnline(statusGlen) ? "dot" : ""}`}>●</span></b></h4>
+          <h1 className="text-center display-4 pb-3"><b>Glen</b></h1>
             <div className="inner-flex-top">
               <div className="flex-13 vert-center-m">
                 <h4 className="text-center pb-2 pt-2">Predicted:</h4>
@@ -120,6 +135,7 @@ function App() {
           </div>
 
           <div className="flex-33 container fixed-bg-3 text-center">
+          <h4 className="text-left" style={selectColor(statusSean)}><b>{statusSean} <span className={`${isOnline(statusSean) ? "dot" : ""}`}>●</span></b></h4>
           <h1 className="text-center display-4 pb-3 pt-3"><b>Sean</b></h1>
             <div className="inner-flex-top">
               <div className="flex-13 vert-center-m">
@@ -138,6 +154,7 @@ function App() {
           </div>
 
           <div className="flex-33 container fixed-bg-3 text-center">
+          <h4 className="text-left" style={selectColor(statusNic)}><b>{statusNic} <span className={`${isOnline(statusNic) ? "dot" : ""}`}>●</span></b></h4>
           <h1 className="text-center display-4 pb-3 pt-3"><b>Nicholas</b></h1>
             <div className="inner-flex-top">
               <div className="flex-13 vert-center-m">

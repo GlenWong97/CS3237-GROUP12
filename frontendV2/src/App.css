@@ -13,6 +13,30 @@
   }
 }
 
+@-webkit-keyframes blink {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+@-moz-keyframes blink {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+@-o-keyframes blink {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+@keyframes blink {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+.dot {
+  -webkit-animation: blink 2s infinite;
+  -moz-animation: blink 2s infinite;
+  -o-animation: blink 2s infinite;
+  animation: blink 2s infinite;
+}
+
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
@@ -97,6 +121,10 @@
 .sm-icon {
   width: 90px;
   height: 90px;  
+}
+
+.text-orange {
+  color: orange;
 }
 
 body {
