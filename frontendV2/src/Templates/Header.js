@@ -6,7 +6,7 @@ const Header = () => {
     <Navbar bg="primary" variant="dark">
       <Nav className="mr-auto">
         <Nav.Link className="nav-font-size" href="/">
-          YesNope
+          DetectMe
         </Nav.Link>
       </Nav>
     </Navbar>
