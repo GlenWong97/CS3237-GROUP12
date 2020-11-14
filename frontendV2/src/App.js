@@ -1,5 +1,5 @@
 import React, { useState, Fragment } from 'react';
-import './App.scss';
+import './App.css';
 import Layout from './Templates/Layout';
 
 var mqtt = require('mqtt');
