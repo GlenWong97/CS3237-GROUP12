@@ -12,7 +12,8 @@
     "react": "^16.13.1",
     "react-bootstrap": "^1.4.0",
     "react-dom": "^16.13.1",
-    "react-scripts": "3.4.1"
+    "react-scripts": "3.4.1",
+    "react-webcam": "^5.2.1"
   },
   "scripts": {
     "start": "react-scripts start",
