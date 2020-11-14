@@ -76,6 +76,7 @@ def on_message(client, userdata, msg):
 	# Recreate the data
 	motion_data = np.array(recv_dict["data"])
 	battery_reading = recv_dict["batterylife"]
+	console.log(battery_reading)
 	result = predict(motion_data)
 	print("Sending results: ", result)
 	result["batterylife"] = battery_reading

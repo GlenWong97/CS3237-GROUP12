@@ -80,6 +80,15 @@ class Sensor(Service):
         return self.callback(1, val)
 
 
+class BatteryService(Service):
+    def __init__(self):
+        super().__init__()
+        self.data_uuid = "00002a19-0000-1000-8000-00805f9b34fb"
+
+    async def read(self, client):
+        val = await client.read_gatt_char(self.data_uuid)
+        return int(val[0])
+
 class MovementSensorMPU9250SubService:
 
     def __init__(self):
@@ -210,7 +219,7 @@ class lstm_model():
         data = self.load_dataset()
         global loaded_model, prediction
         result = loaded_model.predict(data)
-        print('predicted result: ', result)
+        # print('predicted result: ', result)
         themax = numpy.argmax(result[0])
         confidence = 0.93
         if (result[0][themax] < confidence):
@@ -234,6 +243,8 @@ class lstm_model():
         MAG_Y_BUFFER.clear()
         MAG_Z_BUFFER.clear()
 
+
+
 async def run(address):
     async with BleakClient(address) as client:
         x = await client.is_connected()
@@ -249,6 +260,12 @@ async def run(address):
         movement_sensor.register(gyro_sensor)
         movement_sensor.register(magneto_sensor)
         m_sensor = await movement_sensor.enable(client)
+
+        # Enabling battery status
+        battery = BatteryService()
+        prev_battery_reading_time = time()
+        battery_reading = await battery.read(client)
+        print("Battery Reading: {}\n".format(battery_reading))
 
         # Initialise lstm model
         model = lstm_model()
@@ -272,6 +289,13 @@ async def run(address):
                 MAG_Z_BUFFER.append(motion_reading[8])
 
             model.predict()
+
+            # Updates battery status after 15s
+            if time() - prev_battery_reading_time > 15:
+                battery_reading = await battery.read(client)
+                print("Battery Reading: {}\n".format(battery_reading))
+                prev_battery_reading_time = time()
+
 
 def output_to_user():
     global prediction, temp_predict, predict_time
@@ -311,13 +335,12 @@ if __name__ == "__main__":
 
         try:
             loop.run_until_complete(run(address))
-            loop.run_forever()
         except KeyboardInterrupt:
+            print("Received exit, exiting...")
             loop.stop()
             loop.close()
-            print("Received exit, exiting...")
         except Exception as e:
             print(f"exception: {e}")
-
+        
     except FileNotFoundError:
         print("no file named sensortag_addr.txt, create file and input sensortag MAC addr")

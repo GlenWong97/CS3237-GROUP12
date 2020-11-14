@@ -223,6 +223,7 @@ def setup(hostname):
 
 async def run(address):
     async with BleakClient(address) as client:
+
         global READY
         global BATTERYLIFE
         READY = False
@@ -247,7 +248,7 @@ async def run(address):
         battery = BatteryService()
         prev_battery_reading_time = time()
         BATTERYLIFE = await battery.read(client)
-        print("Battery Reading: {}\n".format(BATTERYLIFE))
+        print("Battery Reading: {}\n".format(battery_reading))
             
         while (True):
 
@@ -274,9 +275,9 @@ async def run(address):
             while not READY:
                 # Updates battery status after 15s
                 if time() - prev_battery_reading_time > 15:
-                    BATTERYLIFE = await battery.read(client)
-                    print("Battery Reading: {}\n".format(BATTERYLIFE))
-                    prev_battery_reading_time = time()
+                BATTERYLIFE = await battery.read(client)
+                print("Battery Reading: {}\n".format(battery_reading))
+                prev_battery_reading_time = time()
 
 if __name__ == '__main__':
 
