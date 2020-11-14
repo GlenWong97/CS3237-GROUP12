@@ -38,8 +38,8 @@
 }
 
 .fixed-bg-3 {
-  padding-top: 5px;
-  padding-bottom: 5px;
+  padding-top: 15px;
+  padding-bottom: 25px;
   margin-top: 5px;
 
   /* width: 400px !important; */
@@ -72,17 +72,26 @@
   height: 100%;  
 }
 
-.main-30 {
+.flex-30 {
   flex: 0 0 30%;
 }
 
-.aside-30 {
-  flex: 0 0 30%;
+.flex-13 {
+  flex: 0 0 13%;
+}
+
+.mb-mid {
+  margin-top: 20px;
 }
 
 .md-icon {
   width: 200px;
   height: 200px;
+}
+
+.sm-icon {
+  width: 100px;
+  height: 100px;  
 }
 
 body {
