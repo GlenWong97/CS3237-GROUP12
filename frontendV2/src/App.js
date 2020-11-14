@@ -117,7 +117,7 @@ function App() {
 
           <div className="flex-33 container fixed-bg-3 text-center">
           <h4 className="text-left" style={selectColor(statusGlen)}><b>{statusGlen} <span className={`${isOnline(statusGlen) ? "dot" : ""}`}>●</span></b></h4>
-          <h1 className="text-center display-4 pb-3"><b>Glen</b></h1>
+          <h1 className="text-center display-4 pb-3 pt-3"><b>Glen</b></h1>
             <div className="inner-flex-top">
               <div className="flex-13 vert-center-m">
                 <h4 className="text-center pb-2 pt-2">Predicted:</h4>
