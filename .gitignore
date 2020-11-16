@@ -2,6 +2,7 @@
 *.csv
 !.gitkeep
 .vscode
+.venv
 
 # dependencies
 frontend/node_modules

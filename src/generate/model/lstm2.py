@@ -17,8 +17,8 @@ from matplotlib import pyplot
 
 MODEL_NAME = 'lstm_model.hd5'
 
-# number of classes to classify, for now is 3 (idle, nod, shake)
-NUM_CLASSES = 2
+# number of classes to classify, for now is 4 (nod, shake, up, tilt)
+NUM_CLASSES = 4
 
 
 def load_file(filepath):

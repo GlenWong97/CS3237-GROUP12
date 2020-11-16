@@ -1,20 +1,17 @@
+import os
+import csv
+import sys
 import json
-import paho.mqtt.client as mqtt
-from os import listdir
-from os.path import join
-
+import numpy
+import struct
 import asyncio
 import platform
-import struct
-import csv
-import os
-import sys
-import numpy
+import paho.mqtt.client as mqtt
+
 from time import time
 from bleak import BleakClient
 
 from numpy import mean, std, dstack
-from pandas import read_csv
 from keras.models import Sequential, load_model
 
 ACC_X_BUFFER = []
@@ -165,13 +162,16 @@ class BarometerSensor(Sensor):
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
         print("Connected")
-        client.subscribe("Group_12/LSTM/predict")
+        # Please uncomment accordingly
+        client.subscribe("Group_12/LSTM/predict/Glen")
+        # client.subscribe("Group_12/LSTM/predict/Sean")
+        # client.subscribe("Group_12/LSTM/predict/Nicholas")
     else:
         print("Failed to connect. Error code: %d." % rc)
 
 
 def on_message(client, userdata, msg):
-    print("Received message from server.")
+    # print("Received message from server.")
     resp_dict = json.loads(msg.payload)
     print("Prediction: %s" % (resp_dict["Prediction"]))
     global READY
@@ -247,13 +247,13 @@ async def run(address):
         battery = BatteryService()
         prev_battery_reading_time = time()
         BATTERYLIFE = await battery.read(client)
-        print("Battery Reading: {}\n".format(BATTERYLIFE))
+        # print("Battery Reading: {}\n".format(BATTERYLIFE))
             
         while (True):
 
             # Iterations of data collection
             timesteps = 5        
-            print("Please perform action for 3 seconds.")
+            # print("Please perform action for 3 seconds.")
 
             for i in range(0, timesteps):
                 baro_reading = await barometer_sensor.read(client)
@@ -275,7 +275,7 @@ async def run(address):
                 # Updates battery status after 15s
                 if time() - prev_battery_reading_time > 15:
                     BATTERYLIFE = await battery.read(client)
-                    print("Battery Reading: {}\n".format(BATTERYLIFE))
+                    # print("Battery Reading: {}\n".format(BATTERYLIFE))
                     prev_battery_reading_time = time()
 
 if __name__ == '__main__':

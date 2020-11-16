@@ -1,12 +1,9 @@
-import numpy as np
 import json
-from time import time
-import paho.mqtt.client as mqtt
+import numpy as np
 import tensorflow as tf
+import paho.mqtt.client as mqtt
 
-from PIL import Image
-from os import listdir
-from os.path import join
+from time import time
 from keras.models import load_model
 from tensorflow.python.keras.backend import set_session
 
@@ -56,7 +53,7 @@ def output_to_user():
 def predict(motion_data):
 	with session.graph.as_default():
 		set_session(session)
-		print("Start classifying")
+		# print("Start classifying")
 		global loaded_model, prediction
 		result = loaded_model.predict(motion_data)
 		themax = np.argmax(result[0])
@@ -65,7 +62,7 @@ def predict(motion_data):
 			prediction = 'IDLE'
 		else:
 			prediction = action[themax]
-		print("Done.")
+		# print("Done.")
 		shown = output_to_user()
 	return {"Prediction": prediction, "Shown": shown}
 
@@ -79,7 +76,10 @@ def on_message(client, userdata, msg):
 	result = predict(motion_data)
 	print("Sending results: ", result)
 	result["batterylife"] = battery_reading
-	client.publish("Group_12/LSTM/predict", json.dumps(result))
+	# Select your topic by uncommenting and commenting
+	client.publish("Group_12/LSTM/predict/Glen", json.dumps(result))
+    # client.publish("Group_12/LSTM/predict/Sean", json.dumps(result))
+    # client.publish("Group_12/LSTM/predict/Nicholas", json.dumps(result))
 
 def setup(hostname):
 	client = mqtt.Client()

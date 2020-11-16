@@ -4,8 +4,8 @@ import './App.css';
 import Layout from './Templates/Layout';
 
 const imagePaths = {
-  "NOD": "/yes.png",
-  "SHAKE": "/no.png",
+  "Nod": "/yes.png",
+  "Shake": "/no.png",
   "IDLE": "/sleeping.png"
 }
 
@@ -30,25 +30,25 @@ function App() {
 
   client.on('message', function (topic, message) {
     note = JSON.parse(message.toString());
-    console.log(note)
-
+    // console.log(note)
+    // console.log(topic)
     if (topic === 'Group_12/LSTM/predict/Glen') {
       setStatusGlen("Online");
       setPredictedGlen(note['Prediction']);
       setShownGlen(note['Shown']);
       setBatteryLifeA(note['batterylife']);
-     } else if (topic === 'Group_12/LSTM/predict/Sean') { 
+    }
+    if (topic === 'Group_12/LSTM/predict/Sean') { 
       setStatusSean("Online");
       setPredictedSean(note['Prediction']);
       setShownSean(note['Shown']);
       setBatteryLifeSean(note['batterylife']); 
-    } else if (topic === 'Group_12/LSTM/predict/Nicholas') { 
+    }
+    if (topic === 'Group_12/LSTM/predict/Nicholas') { 
       setStatusNic("Online");
       setPredictedNic(note['Prediction']);
       setShownNic(note['Shown']);
       setBatteryLifeNic(note['batterylife']); 
-    } else {
-      console.log(topic);
     }
   });
 
