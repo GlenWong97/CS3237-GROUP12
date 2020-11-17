@@ -17,7 +17,9 @@ const WebcamComponent = () => <Webcam
 
 var mqtt = require('mqtt');
 
-// Add .env file to store passwor
+// TEST SERVER (OLD): var client = mqtt.connect('mqtt://test.mosquitto.org:8081', { protocol: 'mqtts' });
+
+// Add .env file with "REACT_APP_EC2_PASSWORD" in /frontendV2 to store password
 var client = mqtt.connect('ws://13.229.102.188:9001', {
   username:"permasteo",
   password:process.env.REACT_APP_EC2_PASSWORD
