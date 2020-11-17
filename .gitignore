@@ -1,2 +1,21 @@
-sensortag_addr.txt
+*sensortag_addr.txt
 *.csv
+!.gitkeep
+.vscode
+.venv
+
+# dependencies
+frontend/node_modules
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pyc
+node_modules
