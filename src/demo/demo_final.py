@@ -260,14 +260,13 @@ def check_and_publish(prediction, mqtt_client):
     result = {}
     if prediction != PREVIOUS_SHOWN:
         result["Shown"] = prediction
-        result["batterylife"] = BATTERYLIFE
-        
+        result["batterylife"] = BATTERYLIFE        
         #########################################
         #  Select your topic before publishing  #
         #########################################
         mqtt_client.publish("Group_12/LSTM/predict/Glen", json.dumps(result))
-        # client.publish("Group_12/LSTM/predict/Sean", json.dumps(result))
-        # client.publish("Group_12/LSTM/predict/Nicholas", json.dumps(result))
+        # mqtt_client.publish("Group_12/LSTM/predict/Sean", json.dumps(result))
+        # mqtt_client.publish("Group_12/LSTM/predict/Nicholas", json.dumps(result))
     
     PREVIOUS_SHOWN = prediction
 
