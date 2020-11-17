@@ -39,36 +39,30 @@ function App() {
     console.log(topic);
     if (topic === 'Group_12/LSTM/predict/Glen') {
       setStatusGlen("Online");
-      setPredictedGlen(note['Prediction']);
       setShownGlen(note['Shown']);
       setBatteryLifeA(note['batterylife']);
     }
     if (topic === 'Group_12/LSTM/predict/Sean') { 
       setStatusSean("Online");
-      setPredictedSean(note['Prediction']);
       setShownSean(note['Shown']);
       setBatteryLifeSean(note['batterylife']); 
     }
     if (topic === 'Group_12/LSTM/predict/Nicholas') { 
       setStatusNic("Online");
-      setPredictedNic(note['Prediction']);
       setShownNic(note['Shown']);
       setBatteryLifeNic(note['batterylife']); 
     }
   });
 
   const [statusGlen, setStatusGlen] = useState("Offline");
-  const [predictedGlen, setPredictedGlen] = useState("nothing heard");
   const [shownGlen, setShownGlen] = useState("nothing heard");
   const [batteryLifeA, setBatteryLifeA] = useState(0);
 
   const [statusSean, setStatusSean] = useState("Offline");
-  const [predictedSean, setPredictedSean] = useState("nothing heard");
   const [shownSean, setShownSean] = useState("nothing heard");
   const [batteryLifeSean, setBatteryLifeSean] = useState(0);
 
   const [statusNic, setStatusNic] = useState("Offline");
-  const [predictedNic, setPredictedNic] = useState("nothing heard");
   const [shownNic, setShownNic] = useState("nothing heard");
   const [batteryLifeNic, setBatteryLifeNic] = useState(0);
 
@@ -125,16 +119,12 @@ function App() {
           <h1 className="text-center display-4 pb-3 pt-3"><b>Glen</b></h1>
             <div className="inner-flex-top">
               <div className="flex-13 vert-center-m">
-                <h4 className="text-center pb-2 pt-2">Predicted:</h4>
-                <img className="sm-icon" src={imagePaths[predictedGlen] ? imagePaths[predictedGlen] : "/sleeping.png" } alt="predict" />
-              </div>
-              <div className="flex-13 vert-center-m">
-                <h4 className="text-center pb-2 pt-2">Shown:</h4>
+                <h4 className="pb-3 pt-2">Shown:</h4>
                 <img className="sm-icon" src={imagePaths[shownGlen] ? imagePaths[shownGlen] : "/sleeping.png" } alt="Shown" />
               </div>
               <div className="flex-13 vert-center-m">
-                <h4 className="text-center pb-2 pt-2">Battery:</h4>
-                <h1 className="text-center pb-2 pt-2 mb-mid">{batteryLifeA}%</h1>
+                <h4 className="pb-3 pt-2">Battery:</h4>
+                <h1 className="pb-2 pt-2 mb-mid">{batteryLifeA}%</h1>
               </div>  
             </div>
           </div>
@@ -144,16 +134,12 @@ function App() {
           <h1 className="text-center display-4 pb-3 pt-3"><b>Sean</b></h1>
             <div className="inner-flex-top">
               <div className="flex-13 vert-center-m">
-                <h4 className="text-center pb-2 pt-2">Predicted:</h4>
-                <img className="sm-icon" src={imagePaths[predictedSean] ? imagePaths[predictedSean] : "/sleeping.png" } alt="predict" />
-              </div>
-              <div className="flex-13 vert-center-m">
-                <h4 className="text-center pb-2 pt-2">Shown:</h4>
+                <h4 className="pb-3 pt-2">Shown:</h4>
                 <img className="sm-icon" src={imagePaths[shownSean] ? imagePaths[shownSean] : "/sleeping.png" } alt="Shown" />
               </div>
               <div className="flex-13 vert-center-m">
-                <h4 className="text-center pb-2 pt-2">Battery:</h4>
-                <h1 className="text-center pb-2 pt-2 mb-mid">{batteryLifeSean}%</h1>
+                <h4 className="pb-3 pt-2">Battery:</h4>
+                <h1 className="pb-2 pt-2 mb-mid">{batteryLifeSean}%</h1>
               </div>  
             </div>
           </div>
@@ -163,16 +149,12 @@ function App() {
           <h1 className="text-center display-4 pb-3 pt-3"><b>Nicholas</b></h1>
             <div className="inner-flex-top">
               <div className="flex-13 vert-center-m">
-                <h4 className="text-center pb-2 pt-2">Predicted:</h4>
-                <img className="sm-icon" src={imagePaths[predictedNic] ? imagePaths[predictedNic] : "/sleeping.png" } alt="predict" />
-              </div>
-              <div className="flex-13 vert-center-m">
-                <h4 className="text-center pb-2 pt-2">Shown:</h4>
+                <h4 className=" pb-3 pt-2">Shown:</h4>
                 <img className="sm-icon" src={imagePaths[shownNic] ? imagePaths[shownNic] : "/sleeping.png" } alt="Shown" />
               </div>
               <div className="flex-13 vert-center-m">
-                <h4 className="text-center pb-2 pt-2">Battery:</h4>
-                <h1 className="text-center pb-2 pt-2 mb-mid">{batteryLifeNic}%</h1>
+                <h4 className="pb-3 pt-2">Battery:</h4>
+                <h1 className="pb-2 pt-2 mb-mid">{batteryLifeNic}%</h1>
               </div>  
             </div>
           </div>

@@ -106,7 +106,7 @@
 }
 
 .flex-13 {
-  flex: 0 0 30%;
+  flex: 0 0 28%;
 }
 
 .mb-mid {
@@ -119,8 +119,8 @@
 }
 
 .sm-icon {
-  width: 90px;
-  height: 90px;  
+  width: 100px;
+  height: 100px;  
 }
 
 .text-orange {
