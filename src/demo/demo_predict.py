@@ -215,7 +215,7 @@ class lstm_model():
         data = dstack(loaded)
         return data
 
-    def predict(self):
+    def predict(self, index):
         data = self.load_dataset()
         global loaded_model, prediction
         result = loaded_model.predict(data)
@@ -227,9 +227,9 @@ class lstm_model():
         else:
             prediction = dict[themax]
         
-        print('----------------------')
-        print(f"predicted:      {prediction}")
-        output_to_user()
+        # print('----------------------')
+        print(f"----------------------\npredicted for {index}:      {prediction}")
+        output_to_user(index)
         
         # Clearing buffers after making prediction
         BARO_BUFFER.clear()
@@ -244,76 +244,132 @@ class lstm_model():
         MAG_Z_BUFFER.clear()
 
 
+class SensorTag:
+    def __init__(self, address, index):
+        self.address = address
+        self.index = index
 
-async def run(address):
-    async with BleakClient(address) as client:
-        x = await client.is_connected()
-        print("Connected: {0}".format(x))
+    async def run(self):
+        async with BleakClient(self.address) as client:
+            x = await client.is_connected()
+            print("Connected: {0}".format(x))
 
-        # Enabling sensors
-        barometer_sensor = await BarometerSensor().enable(client)
-        acc_sensor = AccelerometerSensorMovementSensorMPU9250()
-        gyro_sensor = GyroscopeSensorMovementSensorMPU9250()
-        magneto_sensor = MagnetometerSensorMovementSensorMPU9250()
-        movement_sensor = MovementSensorMPU9250()
-        movement_sensor.register(acc_sensor)
-        movement_sensor.register(gyro_sensor)
-        movement_sensor.register(magneto_sensor)
-        m_sensor = await movement_sensor.enable(client)
+            # Enabling sensors
+            barometer_sensor = await BarometerSensor().enable(client)
+            acc_sensor = AccelerometerSensorMovementSensorMPU9250()
+            gyro_sensor = GyroscopeSensorMovementSensorMPU9250()
+            magneto_sensor = MagnetometerSensorMovementSensorMPU9250()
+            movement_sensor = MovementSensorMPU9250()
+            movement_sensor.register(acc_sensor)
+            movement_sensor.register(gyro_sensor)
+            movement_sensor.register(magneto_sensor)
+            m_sensor = await movement_sensor.enable(client)
 
-        # Enabling battery status
-        battery = BatteryService()
-        prev_battery_reading_time = time()
-        battery_reading = await battery.read(client)
-        print("Battery Reading: {}\n".format(battery_reading))
+            # Enabling battery status
+            battery = BatteryService()
+            prev_battery_reading_time = time()
+            battery_reading = await battery.read(client)
+            print(f"Battery Reading for {self.index}: {battery_reading}\n")
 
-        # Initialise lstm model
-        model = lstm_model()
+            # Initialise lstm model
+            model = lstm_model()
 
-        # Iterations of data collection
-        timesteps = 5
+            # Iterations of data collection
+            timesteps = 5
 
-        while True:
-            for i in range(0, timesteps):
-                baro_reading = await barometer_sensor.read(client)
-                motion_reading = await m_sensor.read(client)
-                BARO_BUFFER.append(baro_reading)
-                GYRO_X_BUFFER.append(motion_reading[0])
-                GYRO_Y_BUFFER.append(motion_reading[1])
-                GYRO_Z_BUFFER.append(motion_reading[2])
-                ACC_X_BUFFER.append(motion_reading[3])
-                ACC_Y_BUFFER.append(motion_reading[4])
-                ACC_Z_BUFFER.append(motion_reading[5])
-                MAG_X_BUFFER.append(motion_reading[6])
-                MAG_Y_BUFFER.append(motion_reading[7])
-                MAG_Z_BUFFER.append(motion_reading[8])
+            while True:
+                for i in range(0, timesteps):
+                    baro_reading = await barometer_sensor.read(client)
+                    motion_reading = await m_sensor.read(client)
+                    BARO_BUFFER.append(baro_reading)
+                    GYRO_X_BUFFER.append(motion_reading[0])
+                    GYRO_Y_BUFFER.append(motion_reading[1])
+                    GYRO_Z_BUFFER.append(motion_reading[2])
+                    ACC_X_BUFFER.append(motion_reading[3])
+                    ACC_Y_BUFFER.append(motion_reading[4])
+                    ACC_Z_BUFFER.append(motion_reading[5])
+                    MAG_X_BUFFER.append(motion_reading[6])
+                    MAG_Y_BUFFER.append(motion_reading[7])
+                    MAG_Z_BUFFER.append(motion_reading[8])
 
-            model.predict()
+                model.predict(self.index)
 
-            # Updates battery status after 15s
-            if time() - prev_battery_reading_time > 15:
-                battery_reading = await battery.read(client)
-                print("Battery Reading: {}\n".format(battery_reading))
-                prev_battery_reading_time = time()
+                # Updates battery status after 15s
+                if time() - prev_battery_reading_time > 15:
+                    battery_reading = await battery.read(client)
+                    print(f"Battery Reading: {battery_reading}\n")
+                    prev_battery_reading_time = time()
 
 
-def output_to_user():
+# async def run(address, index):
+#     async with BleakClient(address) as client:
+#         x = await client.is_connected()
+#         print("Connected: {0}".format(x))
+
+#         # Enabling sensors
+#         barometer_sensor = await BarometerSensor().enable(client)
+#         acc_sensor = AccelerometerSensorMovementSensorMPU9250()
+#         gyro_sensor = GyroscopeSensorMovementSensorMPU9250()
+#         magneto_sensor = MagnetometerSensorMovementSensorMPU9250()
+#         movement_sensor = MovementSensorMPU9250()
+#         movement_sensor.register(acc_sensor)
+#         movement_sensor.register(gyro_sensor)
+#         movement_sensor.register(magneto_sensor)
+#         m_sensor = await movement_sensor.enable(client)
+
+#         # Enabling battery status
+#         battery = BatteryService()
+#         prev_battery_reading_time = time()
+#         battery_reading = await battery.read(client)
+#         print(f"Battery Reading for {index}: {battery_reading}\n")
+
+#         # Initialise lstm model
+#         model = lstm_model()
+
+#         # Iterations of data collection
+#         timesteps = 5
+
+#         while True:
+#             for i in range(0, timesteps):
+#                 baro_reading = await barometer_sensor.read(client)
+#                 motion_reading = await m_sensor.read(client)
+#                 BARO_BUFFER.append(baro_reading)
+#                 GYRO_X_BUFFER.append(motion_reading[0])
+#                 GYRO_Y_BUFFER.append(motion_reading[1])
+#                 GYRO_Z_BUFFER.append(motion_reading[2])
+#                 ACC_X_BUFFER.append(motion_reading[3])
+#                 ACC_Y_BUFFER.append(motion_reading[4])
+#                 ACC_Z_BUFFER.append(motion_reading[5])
+#                 MAG_X_BUFFER.append(motion_reading[6])
+#                 MAG_Y_BUFFER.append(motion_reading[7])
+#                 MAG_Z_BUFFER.append(motion_reading[8])
+
+#             model.predict(index)
+
+#             # Updates battery status after 15s
+#             if time() - prev_battery_reading_time > 15:
+#                 battery_reading = await battery.read(client)
+#                 print(f"Battery Reading: {battery_reading}\n")
+#                 prev_battery_reading_time = time()
+
+
+def output_to_user(index):
     global prediction, temp_predict, predict_time
     # print(f"temp predict is: {temp_predict}")
     
     if prediction == 'IDLE':
         if temp_predict != 'IDLE':
             if time() - predict_time < 5:
-                print(f"shown:          {temp_predict}")
+                print(f"shown for {index}:          {temp_predict}\n")
             else:
                 temp_predict = 'IDLE'
-                print(f"shown:          {prediction}")
+                print(f"shown for {index}:          {prediction}\n")
         else:
-            print(f"shown:          {temp_predict}")
+            print(f"shown for {index}:          {temp_predict}\n")
     else:
         temp_predict = prediction
         predict_time = time()
-        print(f"shown:          {temp_predict}")
+        print(f"shown for {index}:          {temp_predict}\n")
         
     print('----------------------\n')
 
@@ -321,26 +377,31 @@ def output_to_user():
 if __name__ == "__main__":
     # os.system('color 7')
     os.environ["PYTHONASYNCIODEBUG"] = str(1)
+    devices = []
     try:
         with open(f"{sys.path[0]}/sensortag_addr.txt") as f:
-            address = (
-                f.read()
-                if platform.system() != "Darwin"
-                else "6FFBA6AE-0802-4D92-B1CD-041BE4B4FEB9"
+            addrs = f.read().splitlines()
+
+        for i in range(len(addrs)):
+            devices.append(
+                SensorTag(address= addrs[i], index= i)
             )
 
         print("Predicting movement...")
-
+        print(f"addresses: {addrs}")
         loop = asyncio.get_event_loop()
 
         try:
-            loop.run_until_complete(run(address))
+            loop.run_until_complete(asyncio.gather(*(dev.run() for dev in devices)))
+            # loop.run_until_complete(asyncio.gather(*[dev.run() for dev in devices]))
+            # loop.run_until_complete(asyncio.gather(*[run(addrs[i], i) for i in range(len(addrs))])) //working
+            # loop.run_until_complete(run(address))
         except KeyboardInterrupt:
             print("Received exit, exiting...")
             loop.stop()
             loop.close()
-        except Exception as e:
-            print(f"exception: {e}")
+        # except Exception as e:
+        #     print(f"exception: {e}")
         
     except FileNotFoundError:
         print("no file named sensortag_addr.txt, create file and input sensortag MAC addr")

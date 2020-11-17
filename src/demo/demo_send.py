@@ -163,9 +163,9 @@ def on_connect(client, userdata, flags, rc):
     if rc == 0:
         print("Connected")
         # Please uncomment accordingly
-        client.subscribe("Group_12/LSTM/predict/Glen")
+        # client.subscribe("Group_12/LSTM/predict/Glen")
         # client.subscribe("Group_12/LSTM/predict/Sean")
-        # client.subscribe("Group_12/LSTM/predict/Nicholas")
+        client.subscribe("Group_12/LSTM/predict/Nicholas")
     else:
         print("Failed to connect. Error code: %d." % rc)
 
@@ -198,7 +198,7 @@ def sending_data(mqtt_client):
     data = dstack(loaded)
     data = data.tolist()
     send_dict = {"data": data, "batterylife": BATTERYLIFE}
-    mqtt_client.publish("Group_12/LSTM/classify", json.dumps(send_dict))
+    mqtt_client.publish("Group_12/LSTM/classify/Nicholas", json.dumps(send_dict))
 
     # Clearing buffers after making prediction
     BARO_BUFFER.clear()

@@ -15,6 +15,7 @@ predict_time = 0.0
 
 session = tf.compat.v1.Session(graph=tf.compat.v1.Graph())
 action = {0: 'Nod', 1: 'Shake'}
+PREVIOUS_SHOWN = ''
 
 # When calling load_model
 def loading_model():
@@ -28,7 +29,7 @@ def on_connect(client, userdata, flags, rc):
 	if rc == 0:
 		print("Successfully connected to broker")
 		print("Loading model... Do not send data!")
-		client.subscribe("Group_12/LSTM/classify")
+		client.subscribe("Group_12/LSTM/classify/Nicholas")
 	else:
 		print("Connection failed with code: %d." % rc)
 
@@ -70,16 +71,21 @@ def on_message(client, userdata, msg):
 	# Payload is in msg. We convert it back to a Python dictionary.
 	recv_dict = json.loads(msg.payload)
 
+	global PREVIOUS_SHOWN
 	# Recreate the data
 	motion_data = np.array(recv_dict["data"])
 	battery_reading = recv_dict["batterylife"]
 	result = predict(motion_data)
-	print("Sending results: ", result)
-	result["batterylife"] = battery_reading
-	# Select your topic by uncommenting and commenting
-	client.publish("Group_12/LSTM/predict/Glen", json.dumps(result))
-    # client.publish("Group_12/LSTM/predict/Sean", json.dumps(result))
-    # client.publish("Group_12/LSTM/predict/Nicholas", json.dumps(result))
+
+	if (result["Shown"] != PREVIOUS_SHOWN):
+		print("Sending results: ", result)
+		result["batterylife"] = battery_reading
+		# Select your topic by uncommenting and commenting
+		# client.publish("Group_12/LSTM/predict/Glen", json.dumps(result))
+		# client.publish("Group_12/LSTM/predict/Sean", json.dumps(result))
+		client.publish("Group_12/LSTM/predict/Nicholas", json.dumps(result))
+
+	PREVIOUS_SHOWN = result["Shown"]
 
 def setup(hostname):
 	client = mqtt.Client()
