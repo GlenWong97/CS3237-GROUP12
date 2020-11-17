@@ -11,6 +11,7 @@ import paho.mqtt.client as mqtt
 
 from time import time
 from bleak import BleakClient
+from dotenv import load_dotenv
 
 from numpy import mean, std, dstack
 from keras.models import Sequential, load_model
@@ -237,9 +238,13 @@ class lstm_model():
             return temp_predict
                      
 def setup(hostname):
+    USERID = "permasteo"
+    PASSWORD = os.getenv("REACT_APP_EC2_PASSWORD")    
+
     client = mqtt.Client()
+    client.username_pw_set(USERID, PASSWORD)
     client.on_connect = on_connect
-    client.connect(hostname)
+    client.connect(hostname, port=1883)
     client.loop_start()
     return client
 
@@ -278,7 +283,7 @@ async def run(address):
         print("Connected: {0}".format(x))
 
         # Setting MQTT Client
-        mqtt_client = setup("test.mosquitto.org")
+        mqtt_client = setup("13.229.102.188")
     
         # Enabling sensors
         barometer_sensor = await BarometerSensor().enable(client)
@@ -318,6 +323,8 @@ async def run(address):
 if __name__ == '__main__':
 
     os.environ["PYTHONASYNCIODEBUG"] = str(1)
+    load_dotenv()
+
     try:
         with open(f"{sys.path[0]}/sensortag_addr.txt") as f:
             address = (

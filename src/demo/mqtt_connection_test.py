@@ -1,6 +1,5 @@
 import paho.mqtt.client as mqtt
 import json
-import time
 import os
 from dotenv import load_dotenv
 
@@ -26,8 +25,6 @@ if __name__ == '__main__':
 
     # Setting MQTT Client
     mqtt_client = setup("13.229.102.188")
-
-    # time.sleep(1)
 
     result = {
         "Prediction" : "NOD",
