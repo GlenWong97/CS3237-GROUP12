@@ -4,8 +4,8 @@ import './App.css';
 import Layout from './Templates/Layout';
 
 const imagePaths = {
-  "Nod": "/yes.png",
-  "Shake": "/no.png",
+  "NOD": "/yes.png",
+  "SHAKE": "/no.png",
   "IDLE": "/sleeping.png"
 }
 
@@ -16,22 +16,25 @@ const WebcamComponent = () => <Webcam
                         />;
 
 var mqtt = require('mqtt');
-var client = mqtt.connect('mqtt://test.mosquitto.org:8081', { protocol: 'mqtts' });
+
+// Add .env file to store passwor
+var client = mqtt.connect('ws://13.229.102.188:9001', {
+  username:"permasteo",
+  password:process.env.REACT_APP_EC2_PASSWORD
+});
 client.subscribe('Group_12/LSTM/predict/Glen');
 client.subscribe('Group_12/LSTM/predict/Sean');
 client.subscribe('Group_12/LSTM/predict/Nicholas');
 
-// SAMPLE: mosquitto_pub -t 'Group_12/LSTM/predict/Glen' -h 'test.mosquitto.org' -m '{ "Prediction": "SHAKE", "Shown": "SHAKE", "batterylife": 10}'
-// SAMPLE: mosquitto_pub -t 'Group_12/LSTM/predict/Sean' -h 'test.mosquitto.org' -m '{ "Prediction": "NOD", "Shown": "IDLE", "batterylife": 50}'
-// SAMPLE: mosquitto_pub -t 'Group_12/LSTM/predict/Nicholas' -h 'test.mosquitto.org' -m '{ "Prediction": "IDLE", "Shown": "IDLE", "batterylife": 100}'
+// EC2 SAMPLE: mosquitto_pub -t 'Group_12/LSTM/predict/Glen' -h '13.229.102.188' -u 'permasteo' -P 'cs3237g23' -m '{ "Prediction": "SHAKE", "Shown": "SHAKE", "batterylife": 10}'
 
 function App() {
   var note;
 
   client.on('message', function (topic, message) {
     note = JSON.parse(message.toString());
-    // console.log(note)
-    // console.log(topic)
+    console.log(note);
+    console.log(topic);
     if (topic === 'Group_12/LSTM/predict/Glen') {
       setStatusGlen("Online");
       setPredictedGlen(note['Prediction']);
