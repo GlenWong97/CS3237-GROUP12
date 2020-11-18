@@ -16,9 +16,10 @@
 4. Exit virtual environment: `deactivate`
 
 ### Running React App
-1. Change directory to frontendV2: `cd frontendV2` 
-2. To install: `npm install`
-3. To run: `npm start`
+1. Add .env file in \frontendV2 and \src\demo directory to access EC2 instance
+2. Change directory to frontendV2: `cd frontendV2` 
+3. To install: `npm install`
+4. To run: `npm start`
 
 ### Setting up of the cc2650 device
 1. Please make sure your device is not paired with any device at the moment; this includes closing the SensorTag app on your phone after use.
