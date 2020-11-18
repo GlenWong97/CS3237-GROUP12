@@ -19,9 +19,12 @@ var mqtt = require('mqtt');
 
 // TEST SERVER (OLD): var client = mqtt.connect('mqtt://test.mosquitto.org:8081', { protocol: 'mqtts' });
 
-// Add .env file with "REACT_APP_EC2_PASSWORD" in /frontendV2 to store password
-var client = mqtt.connect('ws://13.229.102.188:9001', {
-  username:"permasteo",
+// Add .env file with "REACT_APP_EC2_PASSWORD" in /frontendV2 to store 
+
+var temp = "ws://";
+var CONNECTION_STRING =  temp.concat(process.env.REACT_APP_EC2_PUBLIC_IP, ":9001")
+var client = mqtt.connect(CONNECTION_STRING, {
+  username:process.env.REACT_APP_EC2_USER,
   password:process.env.REACT_APP_EC2_PASSWORD
 });
 client.subscribe('Group_12/LSTM/predict/Glen');

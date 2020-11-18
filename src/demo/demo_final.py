@@ -238,7 +238,7 @@ class lstm_model():
             return temp_predict
                      
 def setup(hostname):
-    USERID = "permasteo"
+    USERID = process.env.REACT_APP_EC2_USER
     PASSWORD = os.getenv("REACT_APP_EC2_PASSWORD")    
 
     client = mqtt.Client()
@@ -283,7 +283,7 @@ async def run(address):
         print("Connected: {0}".format(x))
 
         # Setting MQTT Client
-        mqtt_client = setup("13.229.102.188")
+        mqtt_client = setup(process.env.REACT_APP_EC2_PUBLIC_IP)
     
         # Enabling sensors
         barometer_sensor = await BarometerSensor().enable(client)
