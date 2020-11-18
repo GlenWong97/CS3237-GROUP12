@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 
 def setup(hostname):
-    USERID = process.env.REACT_APP_EC2_USER
+    USERID = os.getenv("REACT_APP_EC2_USER")
     PASSWORD = os.getenv("REACT_APP_EC2_PASSWORD")    
 
     client = mqtt.Client()
@@ -24,7 +24,7 @@ if __name__ == '__main__':
     load_dotenv()
 
     # Setting MQTT Client
-    mqtt_client = setup(process.env.REACT_APP_EC2_PUBLIC_IP)
+    mqtt_client = setup(os.getenv("REACT_APP_EC2_PUBLIC_IP"))
 
     result = {
         "Prediction" : "NOD",
