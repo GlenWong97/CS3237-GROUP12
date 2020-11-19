@@ -18,14 +18,24 @@ import sys
 from bleak import BleakClient
 
 # 0: Idle, 1: Nod, 2: Shake, 3: Look up, 4: Tilt
-LABEL = '4'
+LABEL = '0'
+DATA_POINTS = 2000
 LABELTOACTION = {
     '0': 'Idle',
     '1': 'Nod',
     '2': 'Shake',
-    '3': 'Look up',
+    '3': 'Lookup',
     '4': 'Tilt',
 }
+
+# LABELTOACTION = {
+#     '0': 'Idle',
+#     '1': 'Raise',
+#     '2': 'Wave',
+#     '3': 'Clap',
+#     '4': 'Tilt',
+# }
+
 # Coordination global variable
 READY = -1
 # remove number of data to ensure parallel
@@ -205,7 +215,7 @@ async def run(address):
         m_sensor = await movement_sensor.enable(client)
         global val_count, useful_data, write_count
 
-        while (write_count < 50):
+        while (write_count < DATA_POINTS):
             # await asyncio.sleep(0.08)
             data1 = await barometer_sensor.read(client)
             data2 = await m_sensor.read(client)

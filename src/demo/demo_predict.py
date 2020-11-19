@@ -21,21 +21,12 @@ from numpy import mean, std, dstack
 from pandas import read_csv
 from keras.models import Sequential, load_model
 from time import time
-from termcolor import cprint
 
-# 0: Idle1: Nod, 2: Shake, 3: Look up, 4: Tilt
-LABEL = '2'
-LABELTOACTION = {
-    '0': 'Idle',
-    '1': 'Nod',
-    '2': 'Shake',
-    '3': 'Look up',
-    '4': 'Tilt',
-}
-
-# Datatype: test or train
-DATATYPE = "test"
 MODEL_NAME = 'lstm_model.hd5'
+CONFIDENCE = 0.88
+SHOW_INTERVAL = 3
+BATTERY_INTERVAL = 15
+
 loaded_model = None
 # dict = {0: 'IDLE', 1: 'NOD', 2: 'SHAKE'}
 dict = {0: 'NOD', 1: 'SHAKE', 2: 'LOOKUP', 3: 'TILT'}
@@ -222,18 +213,18 @@ class lstm_model():
         print('predicted result: ', result)
 
         themax = numpy.argmax(result[0])
-        prediction = dict[themax]
+        
         print(f"themax = {themax}\n")
 
-        # confidence = 0.93
-        # if (result[0][themax] < confidence):
-        #     prediction = 'IDLE'
-        # else:
-        #     prediction = dict[themax]
+        if (result[0][themax] < CONFIDENCE):
+            prediction = 'IDLE'
+        else:
+            prediction = dict[themax]
         
-        # print('----------------------')
+        print('----------------------')
+
         print(f"predicted:      {prediction}, confidence = {result[0][themax]}")
-        # output_to_user()
+        output_to_user()
         
         # Clearing buffers after making prediction
         BARO_BUFFER.clear()
@@ -268,6 +259,7 @@ async def run(address):
         # Enabling battery status
         battery = BatteryService()
         prev_battery_reading_time = time()
+        reading_time = 0.0
         battery_reading = await battery.read(client)
         print("Battery Reading: {}\n".format(battery_reading))
 
@@ -278,6 +270,7 @@ async def run(address):
         timesteps = 5
 
         while True:
+            # reading_time = time()
             for i in range(0, timesteps):
                 baro_reading = await barometer_sensor.read(client)
                 motion_reading = await m_sensor.read(client)
@@ -292,10 +285,11 @@ async def run(address):
                 MAG_Y_BUFFER.append(motion_reading[7])
                 MAG_Z_BUFFER.append(motion_reading[8])
 
+            # print(f"time taken to read one window: {time()- reading_time}s")
             model.predict()
 
             # Updates battery status after 15s
-            if time() - prev_battery_reading_time > 15:
+            if time() - prev_battery_reading_time > BATTERY_INTERVAL:
                 battery_reading = await battery.read(client)
                 print("Battery Reading: {}\n".format(battery_reading))
                 prev_battery_reading_time = time()
@@ -307,7 +301,7 @@ def output_to_user():
     
     if prediction == 'IDLE':
         if temp_predict != 'IDLE':
-            if time() - predict_time < 5:
+            if time() - predict_time < SHOW_INTERVAL:
                 print(f"shown:          {temp_predict}")
             else:
                 temp_predict = 'IDLE'
@@ -327,8 +321,9 @@ if __name__ == "__main__":
     os.environ["PYTHONASYNCIODEBUG"] = str(1)
     try:
         with open(f"{sys.path[0]}/sensortag_addr.txt") as f:
+            addrs = f.read().splitlines()
             address = (
-                f.read()
+                addrs[0]
                 if platform.system() != "Darwin"
                 else "6FFBA6AE-0802-4D92-B1CD-041BE4B4FEB9"
             )

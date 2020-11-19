@@ -18,7 +18,7 @@ from matplotlib import pyplot
 MODEL_NAME = 'lstm_model.hd5'
 
 # number of classes to classify, for now is 4 (nod, shake, up, tilt)
-NUM_CLASSES = 4
+NUM_CLASSES = 5
 
 
 def load_file(filepath):
@@ -72,8 +72,8 @@ def load_dataset(prefix=''):
     trainX, testX, trainy, testy = train_test_split(all_X, all_y, test_size= 0.3)
     print(f"trainX shape: {trainX.shape}, trainy shape: {trainy.shape}, testX shape: {testX.shape}, testy shape: {testy.shape}")
     # zero-offset class values
-    trainy = trainy - 1
-    testy = testy - 1
+    trainy = trainy
+    testy = testy
     # one hot encode y
     trainy = to_categorical(trainy, num_classes=NUM_CLASSES)
     testy = to_categorical(testy, num_classes=NUM_CLASSES)
@@ -124,7 +124,7 @@ def buildlstm(model_name, trainX, trainy, testX, testy):
         model.add(Dropout(0.1))
         model.add(Dense(n_outputs, activation='softmax'))
     return model
-    
+
 # def buildlstm(model_name, trainX, trainy, testX, testy):
 #     if os.path.exists(model_name):
 #         model = load_model(model_name)
