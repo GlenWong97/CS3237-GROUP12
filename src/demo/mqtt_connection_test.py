@@ -4,13 +4,13 @@ import os
 from dotenv import load_dotenv
 
 def setup(hostname):
-    USERID = "permasteo"
+    USERID = os.getenv("REACT_APP_EC2_USER")
     PASSWORD = os.getenv("REACT_APP_EC2_PASSWORD")    
 
     client = mqtt.Client()
     client.username_pw_set(USERID, PASSWORD)
     client.on_connect = on_connect
-    client.connect(hostname, port=1883)
+    client.connect(hostname)
     client.loop_start()
     return client
 
@@ -24,7 +24,7 @@ if __name__ == '__main__':
     load_dotenv()
 
     # Setting MQTT Client
-    mqtt_client = setup("13.229.102.188")
+    mqtt_client = setup(os.getenv("REACT_APP_EC2_PUBLIC_IP"))
 
     result = {
         "Prediction" : "NOD",
@@ -37,4 +37,5 @@ if __name__ == '__main__':
 
     ### IMPORTANT: sometimes prevent publish when not called
     mqtt_client.loop_stop()
+    print("Disconnected");
 
