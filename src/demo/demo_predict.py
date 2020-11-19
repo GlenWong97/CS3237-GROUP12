@@ -38,7 +38,7 @@ DATATYPE = "test"
 MODEL_NAME = 'lstm_model.hd5'
 loaded_model = None
 # dict = {0: 'IDLE', 1: 'NOD', 2: 'SHAKE'}
-dict = {0: 'NOD', 1: 'SHAKE'}
+dict = {0: 'NOD', 1: 'SHAKE', 2: 'LOOKUP', 3: 'TILT'}
 prediction, temp_predict = '', ''
 predict_time = 0.0
 
@@ -219,17 +219,21 @@ class lstm_model():
         data = self.load_dataset()
         global loaded_model, prediction
         result = loaded_model.predict(data)
-        # print('predicted result: ', result)
+        print('predicted result: ', result)
+
         themax = numpy.argmax(result[0])
-        confidence = 0.93
-        if (result[0][themax] < confidence):
-            prediction = 'IDLE'
-        else:
-            prediction = dict[themax]
+        prediction = dict[themax]
+        print(f"themax = {themax}\n")
+
+        # confidence = 0.93
+        # if (result[0][themax] < confidence):
+        #     prediction = 'IDLE'
+        # else:
+        #     prediction = dict[themax]
         
-        print('----------------------')
-        print(f"predicted:      {prediction}")
-        output_to_user()
+        # print('----------------------')
+        print(f"predicted:      {prediction}, confidence = {result[0][themax]}")
+        # output_to_user()
         
         # Clearing buffers after making prediction
         BARO_BUFFER.clear()

@@ -124,6 +124,18 @@ def buildlstm(model_name, trainX, trainy, testX, testy):
         model.add(Dropout(0.1))
         model.add(Dense(n_outputs, activation='softmax'))
     return model
+    
+# def buildlstm(model_name, trainX, trainy, testX, testy):
+#     if os.path.exists(model_name):
+#         model = load_model(model_name)
+#     else:
+#         n_timesteps, n_features, n_outputs = trainX.shape[1], trainX.shape[2], trainy.shape[1]
+#         model = Sequential()
+#         model.add(LSTM(100, input_shape=(n_timesteps, n_features)))
+#         model.add(Dropout(0.5))
+#         model.add(Dense(100, activation='relu'))
+#         model.add(Dense(n_outputs, activation='softmax'))
+#     return model
 
 # run an experiment
 def run_experiment(repeats=10):
