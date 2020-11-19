@@ -31,15 +31,18 @@ BARO_BUFFER   = []
 BATTERYLIFE = 0
 
 MODEL_NAME='lstm_model.hd5'
-loaded_model = None
+CONFIDENCE = 0.88
+SHOW_INTERVAL = 3
+BATTERY_INTERVAL = 15
 
+loaded_model = None
 temp_predict = ''
 predict_time = 0.0
 
 session = tf.compat.v1.Session(graph=tf.compat.v1.Graph())
 
-# actions = {0: 'NOD', 1: 'SHAKE', 2: 'LOOKUP', 3: 'TILT'}
-actions = {0: 'NOD', 1: 'SHAKE'}
+actions = {0: 'NOD', 1: 'SHAKE', 2: 'LOOKUP', 3: 'TILT'}
+# actions = {0: 'NOD', 1: 'SHAKE'}
 PREVIOUS_SHOWN = ''
 
 class Service:
@@ -222,10 +225,11 @@ class lstm_model():
         result = loaded_model.predict(data)
         self.clear_buffer()
         themax = numpy.argmax(result[0])
-        confidence = 0.93
-        if (result[0][themax] < confidence): # prediction = 'IDLE'            
+
+        if (result[0][themax] < CONFIDENCE): # prediction = 'IDLE'            
+            
             if temp_predict != 'IDLE':
-                if time() - predict_time < 3:
+                if time() - predict_time < SHOW_INTERVAL:
                     return temp_predict
                 else:
                     temp_predict = 'IDLE'
@@ -315,7 +319,7 @@ async def run(address):
             
             prediction = model.predict()
             print('predicted result: ', prediction)
-            if time() - prev_battery_reading_time > 15:
+            if time() - prev_battery_reading_time > BATTERY_INTERVAL:
                 BATTERYLIFE = await battery.read(client)
                 prev_battery_reading_time = time()
             check_and_publish(prediction, mqtt_client)
@@ -327,8 +331,9 @@ if __name__ == '__main__':
 
     try:
         with open(f"{sys.path[0]}/sensortag_addr.txt") as f:
+            addrs = f.read().splitlines()
             address = (
-                f.read() 
+                addrs[0]
                 if platform.system() != "Darwin"
                 else "6FFBA6AE-0802-4D92-B1CD-041BE4B4FEB9"
             )
@@ -340,8 +345,8 @@ if __name__ == '__main__':
             loop.stop()
             loop.close()
             print("Received exit, exiting...")
-        except Exception as e:
-            print(f"exception: {e}")
+        # except Exception as e:
+        #     print(f"exception: {e}")
 
     except FileNotFoundError:
         print("no file named sensortag_addr.txt, create file and input sensortag MAC addr")      
