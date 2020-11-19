@@ -8,8 +8,8 @@ const imagePaths = {
   "SHAKE": "/no.png",
   "IDLE": "/sleeping.png",
   "TILT": "/thinking.png",
-  "RAISE": "/open_hand.png",
-  "NORAISE": "/clear.png"
+  "RAISE": "/raised_hand.jpg",
+  "NORAISE": "/transparent.png"
 }
 
 const WebcamComponent = () => <Webcam 
@@ -136,7 +136,7 @@ function App() {
 
               <div className="flex-13 vert-center-m">
                 <h4 className="pb-3 pt-2">Hand:</h4>
-                <img className="sm-icon" src={imagePaths[handGlen] ? imagePaths[handGlen] : "/clear.png" } alt="HandGlen" />
+                <img className="sm-icon" src={imagePaths[handGlen] ? imagePaths[handGlen] : "/transparent.png" } alt="HandGlen" />
               </div>
 
               <div className="flex-13 vert-center-m">
@@ -157,7 +157,7 @@ function App() {
 
               <div className="flex-13 vert-center-m">
                 <h4 className="pb-3 pt-2">Hand:</h4>
-                <img className="sm-icon" src={imagePaths[handSean] ? imagePaths[handSean] : "/clear.png" } alt="HandSean" />
+                <img className="sm-icon" src={imagePaths[handSean] ? imagePaths[handSean] : "/transparent.png" } alt="HandSean" />
               </div>
 
               <div className="flex-13 vert-center-m">
@@ -178,7 +178,7 @@ function App() {
 
               <div className="flex-13 vert-center-m">
                 <h4 className="pb-3 pt-2">Hand:</h4>
-                <img className="sm-icon" src={imagePaths[handNic] ? imagePaths[handNic] : "/clear.png" } alt="HandNic" />
+                <img className="sm-icon" src={imagePaths[handNic] ? imagePaths[handNic] : "/transparent.png" } alt="HandNic" />
               </div>
 
               <div className="flex-13 vert-center-m">
