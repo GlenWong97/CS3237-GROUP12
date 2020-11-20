@@ -78,7 +78,8 @@ class BatteryService(Service):
 
     async def read(self, client):
         val = await client.read_gatt_char(self.data_uuid)
-        return int(val[0])
+        # return int(val[0])
+        return val[0]
 
 class MovementSensorMPU9250SubService:
 
