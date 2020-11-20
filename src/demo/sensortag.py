@@ -164,7 +164,7 @@ class lstm_model():
 
         if model == "hand_model.hd5":
             self._confidence = 0.85
-            self._actions = {0: 'IDLE', 1: 'RAISE', 2: 'WAVE', 3: 'CLAP'}
+            self._actions = {0: 'HAND_IDLE', 1: 'RAISE', 2: 'WAVE', 3: 'CLAP'}
         else: # head model
             self._confidence = 0.88
             self._actions = {0: 'NOD', 1: 'SHAKE', 2: 'LOOKUP', 3: 'TILT'}
