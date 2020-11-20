@@ -41,7 +41,7 @@ predict_time = 0.0
 
 session = tf.compat.v1.Session(graph=tf.compat.v1.Graph())
 
-actions = {0: 'IDLE', 1: 'RAISE', 2: 'WAVE', 3: 'CLAP'}
+actions = {0: 'HAND_IDLE', 1: 'RAISE', 2: 'WAVE', 3: 'CLAP'}
 PREVIOUS_SHOWN = ''
 
 class Service:
