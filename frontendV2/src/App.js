@@ -14,7 +14,7 @@ const imagePaths = {
 
   // Hand
   "HAND_IDLE": "/meditation.png",
-  "RAISE": "/raise-hand.png",
+  "RAISE": "/raised_hand.png",
   "WAVE": "/waving-hand.png",
   "CLAP": "/clapping.png",
 
@@ -157,40 +157,61 @@ function App() {
       <div className="container-fluid text-center vert-center-sm">
         <div className="inner-flex-top">
 
+          {/* Glen */}
+
           <div className="flex-33 container fixed-bg-3 text-center">
           <h4 className="text-left" style={selectColor(statusGlen)}><b>{statusGlen} <span className={`${isOnline(statusGlen) ? "dot" : ""}`}>●</span></b></h4>
           <h1 className="text-center display-4 pb-3 pt-3"><b>Glen</b></h1>
-
             <div className="inner-flex-top">
-
               <div className="flex-13 vert-center-m">
                 <h4 className="pb-3 pt-2">Head:</h4>
                 <img className="sm-icon" src={imagePaths[headGlen] ? imagePaths[headGlen] : "/transparent.png" } alt="HeadGlen" />
               </div>
-
               <div className="flex-13 vert-center-m">
                 <h4 className="pb-3 pt-2">Battery:</h4>
                 <h1 className="pb-2 pt-2 mb-mid">{batteryLifeGlen === -1 ? "" : batteryLifeGlen + "%"}</h1>
               </div>  
             </div>
-
             <div className="inner-flex-top">
-
               <div className="flex-13 vert-center-m">
                 <h4 className="pb-3 pt-2">Hand:</h4>
                 <img className="sm-icon" src={imagePaths[handGlen] ? imagePaths[handGlen] : "/transparent.png" } alt="HandGlen" />
               </div>
-
               <div className="flex-13 vert-center-m">
                 <h4 className="pb-3 pt-2">Battery:</h4>
                 <h1 className="pb-2 pt-2 mb-mid">{batteryLifeGlenHand === -1 ? "" : batteryLifeGlenHand + "%"}</h1>
               </div>  
-
             </div>
-
-
-
           </div>
+
+          {/* Nicholas */}
+          
+          <div className="flex-33 container fixed-bg-3 text-center">
+          <h4 className="text-left" style={selectColor(statusNic)}><b>{statusNic} <span className={`${isOnline(statusNic) ? "dot" : ""}`}>●</span></b></h4>
+          <h1 className="text-center display-4 pb-3 pt-3"><b>Nicholas</b></h1>
+            <div className="inner-flex-top">
+              <div className="flex-13 vert-center-m">
+                <h4 className=" pb-3 pt-2">Head:</h4>
+                <img className="sm-icon" src={imagePaths[headNic] ? imagePaths[headNic] : "/transparent.png" } alt="HeadNic" />
+              </div>
+              <div className="flex-13 vert-center-m">
+                <h4 className="pb-3 pt-2">Battery:</h4>
+                <h1 className="pb-2 pt-2 mb-mid">{batteryLifeNic === -1 ? "" : batteryLifeNic + "%"}</h1>
+              </div>  
+            </div>
+            <div className="inner-flex-top">
+              <div className="flex-13 vert-center-m">
+                <h4 className="pb-3 pt-2">Hand:</h4>
+                <img className="sm-icon" src={imagePaths[handNic] ? imagePaths[handNic] : "/transparent.png" } alt="HandNic" />
+              </div>
+              <div className="flex-13 vert-center-m">
+                <h4 className="pb-3 pt-2">Battery:</h4>
+                <h1 className="pb-2 pt-2 mb-mid">{batteryLifeNicHand === -1 ? "" : batteryLifeNicHand + "%"}</h1>
+              </div>  
+            </div>
+          </div>
+
+          {/* Sean */}
 
           <div className="flex-33 container fixed-bg-3 text-center">
           <h4 className="text-left" style={selectColor(statusSean)}><b>{statusSean} <span className={`${isOnline(statusSean) ? "dot" : ""}`}>●</span></b></h4>
@@ -200,63 +221,27 @@ function App() {
                 <h4 className="pb-3 pt-2">Head:</h4>
                 <img className="sm-icon" src={imagePaths[headSean] ? imagePaths[headSean] : "/transparent.png" } alt="HeadSean" />
               </div>
-
               <div className="flex-13 vert-center-m">
                 <h4 className="pb-3 pt-2">Battery:</h4>
                 <h1 className="pb-2 pt-2 mb-mid">{batteryLifeSean === -1 ? "" : batteryLifeSean + "%"}</h1>
               </div>  
             </div>
-
             <div className="inner-flex-top">
-
               <div className="flex-13 vert-center-m">
                 <h4 className="pb-3 pt-2">Hand:</h4>
                 <img className="sm-icon" src={imagePaths[handSean] ? imagePaths[handSean] : "/transparent.png" } alt="HandSean" />
               </div>
-              
               <div className="flex-13 vert-center-m">
                 <h4 className="pb-3 pt-2">Battery:</h4>
                 <h1 className="pb-2 pt-2 mb-mid">{batteryLifeSeanHand === -1 ? "" : batteryLifeSeanHand + "%"}</h1>
               </div>  
-              
             </div>
-
           </div>
 
-          <div className="flex-33 container fixed-bg-3 text-center">
-          <h4 className="text-left" style={selectColor(statusNic)}><b>{statusNic} <span className={`${isOnline(statusNic) ? "dot" : ""}`}>●</span></b></h4>
-          <h1 className="text-center display-4 pb-3 pt-3"><b>Nicholas</b></h1>
-            <div className="inner-flex-top">
-              <div className="flex-13 vert-center-m">
-                <h4 className=" pb-3 pt-2">Head:</h4>
-                <img className="sm-icon" src={imagePaths[headNic] ? imagePaths[headNic] : "/transparent.png" } alt="HeadNic" />
-              </div>
-
-              <div className="flex-13 vert-center-m">
-                <h4 className="pb-3 pt-2">Battery:</h4>
-                <h1 className="pb-2 pt-2 mb-mid">{batteryLifeNic === -1 ? "" : batteryLifeNic + "%"}</h1>
-              </div>  
-            </div>
-
-            <div className="inner-flex-top">
-
-              <div className="flex-13 vert-center-m">
-                <h4 className="pb-3 pt-2">Hand:</h4>
-                <img className="sm-icon" src={imagePaths[handNic] ? imagePaths[handNic] : "/transparent.png" } alt="HandNic" />
-              </div>
-              
-              <div className="flex-13 vert-center-m">
-                <h4 className="pb-3 pt-2">Battery:</h4>
-                <h1 className="pb-2 pt-2 mb-mid">{batteryLifeNicHand === -1 ? "" : batteryLifeNicHand + "%"}</h1>
-              </div>  
-              
-            </div>
+          
 
 
 
-
-
-          </div>
 
         </div>
       </div>
