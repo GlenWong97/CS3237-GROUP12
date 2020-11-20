@@ -28,6 +28,7 @@ BARO_BUFFER = []
 READY = False
 BATTERYLIFE = 0
 
+
 class Service:
 
     def __init__(self):
@@ -35,6 +36,7 @@ class Service:
         self.ctrl_uuid = None
         self.freq_uuid = None
         self.freq_bits = bytearray([0x0A])  # 10hz
+
 
 class Sensor(Service):
 
@@ -51,6 +53,7 @@ class Sensor(Service):
         val = await client.read_gatt_char(self.data_uuid)
         return self.callback(1, val)
 
+
 class BatteryService(Service):
     def __init__(self):
         super().__init__()
@@ -59,6 +62,7 @@ class BatteryService(Service):
     async def read(self, client):
         val = await client.read_gatt_char(self.data_uuid)
         return int(val[0])
+
 
 class MovementSensorMPU9250SubService:
 
@@ -76,9 +80,9 @@ class MovementSensorMPU9250(Sensor):
     GYRO_XYZ = 7
     ACCEL_XYZ = 7 << 3
     MAG_XYZ = 1 << 6
-    ACCEL_RANGE_2G  = 0 << 8
-    ACCEL_RANGE_4G  = 1 << 8
-    ACCEL_RANGE_8G  = 2 << 8
+    ACCEL_RANGE_2G = 0 << 8
+    ACCEL_RANGE_4G = 1 << 8
+    ACCEL_RANGE_8G = 2 << 8
     ACCEL_RANGE_16G = 3 << 8
 
     def __init__(self):
@@ -108,9 +112,9 @@ class MovementSensorMPU9250(Sensor):
 
     async def read(self, client):
         val = await client.read_gatt_char(self.data_uuid)
-        return self.callback(1, val)       
+        return self.callback(1, val)
 
-        
+
 class GyroscopeSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
     def __init__(self):
         super().__init__()
@@ -127,12 +131,12 @@ class AccelerometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
     def __init__(self):
         super().__init__()
         self.bits = MovementSensorMPU9250.ACCEL_XYZ | MovementSensorMPU9250.ACCEL_RANGE_4G
-        self.scale = 8.0/32768.0 
+        self.scale = 8.0/32768.0
 
     def cb_sensor(self, data):
         '''Returns (x_accel, y_accel, z_accel) in units of g'''
         rawVals = data[3:6]
-        return [(x*self.scale) for x in rawVals] 
+        return [(x*self.scale) for x in rawVals]
 
 
 class MagnetometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
@@ -147,6 +151,7 @@ class MagnetometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
         rawVals = data[6:9]
         return [(x*self.scale) for x in rawVals]
 
+
 class BarometerSensor(Sensor):
     def __init__(self):
         super().__init__()
@@ -159,12 +164,13 @@ class BarometerSensor(Sensor):
         press = (pH*65536 + pM*256 + pL) / 100.0
         return press
 
+
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
         print("Connected")
         # Please uncomment accordingly
-        client.subscribe("Group_12/LSTM/predict/Glen")
-        # client.subscribe("Group_12/LSTM/predict/Sean")
+        # client.subscribe("Group_12/LSTM/predict/Glen")
+        client.subscribe("Group_12/LSTM/predict/Sean")
         # client.subscribe("Group_12/LSTM/predict/Nicholas")
     else:
         print("Failed to connect. Error code: %d." % rc)
@@ -179,7 +185,7 @@ def on_message(client, userdata, msg):
 
 
 def sending_data(mqtt_client):
-    
+
     global BATTERYLIFE
     # load all data
     loaded = list()
@@ -193,12 +199,12 @@ def sending_data(mqtt_client):
     loaded.append(MAG_X_BUFFER)
     loaded.append(MAG_X_BUFFER)
     loaded.append(BARO_BUFFER)
-    
+
     # stack group so that features are the 3rd dimension
     data = dstack(loaded)
     data = data.tolist()
     send_dict = {"data": data, "batterylife": BATTERYLIFE}
-    mqtt_client.publish("Group_12/LSTM/classify", json.dumps(send_dict))
+    mqtt_client.publish("Group_12/LSTM/classify/Sean", json.dumps(send_dict))
 
     # Clearing buffers after making prediction
     BARO_BUFFER.clear()
@@ -221,6 +227,7 @@ def setup(hostname):
     client.loop_start()
     return client
 
+
 async def run(address):
     async with BleakClient(address) as client:
         global READY
@@ -231,7 +238,7 @@ async def run(address):
 
         # Setting MQTT Client
         mqtt_client = setup("test.mosquitto.org")
-    
+
         # Enabling sensors
         barometer_sensor = await BarometerSensor().enable(client)
         acc_sensor = AccelerometerSensorMovementSensorMPU9250()
@@ -248,11 +255,11 @@ async def run(address):
         prev_battery_reading_time = time()
         BATTERYLIFE = await battery.read(client)
         # print("Battery Reading: {}\n".format(BATTERYLIFE))
-            
+
         while (True):
 
             # Iterations of data collection
-            timesteps = 5        
+            timesteps = 5
             # print("Please perform action for 3 seconds.")
 
             for i in range(0, timesteps):
@@ -268,7 +275,7 @@ async def run(address):
                 MAG_X_BUFFER.append(motion_reading[6])
                 MAG_Y_BUFFER.append(motion_reading[7])
                 MAG_Z_BUFFER.append(motion_reading[8])
-            
+
             sending_data(mqtt_client)
 
             while not READY:
@@ -284,7 +291,7 @@ if __name__ == '__main__':
     try:
         with open(f"{sys.path[0]}/sensortag_addr.txt") as f:
             address = (
-                f.read() 
+                f.read()
                 if platform.system() != "Darwin"
                 else "6FFBA6AE-0802-4D92-B1CD-041BE4B4FEB9"
             )
@@ -302,4 +309,4 @@ if __name__ == '__main__':
             print(f"exception: {e}")
 
     except FileNotFoundError:
-        print("no file named sensortag_addr.txt, create file and input sensortag MAC addr")      
+        print("no file named sensortag_addr.txt, create file and input sensortag MAC addr")

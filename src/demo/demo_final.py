@@ -9,27 +9,27 @@ import platform
 import tensorflow as tf
 import paho.mqtt.client as mqtt
 
-from time import time
+from time import time, ctime
 from bleak import BleakClient
 
 from numpy import mean, std, dstack
 from keras.models import Sequential, load_model
 from tensorflow.python.keras.backend import set_session
 
-ACC_X_BUFFER  = []
-ACC_Y_BUFFER  = []
-ACC_Z_BUFFER  = []
+ACC_X_BUFFER = []
+ACC_Y_BUFFER = []
+ACC_Z_BUFFER = []
 GYRO_X_BUFFER = []
 GYRO_Y_BUFFER = []
 GYRO_Z_BUFFER = []
-MAG_X_BUFFER  = []
-MAG_Y_BUFFER  = []
-MAG_Z_BUFFER  = []
-BARO_BUFFER   = []
+MAG_X_BUFFER = []
+MAG_Y_BUFFER = []
+MAG_Z_BUFFER = []
+BARO_BUFFER = []
 
 BATTERYLIFE = 0
 
-MODEL_NAME='lstm_model.hd5'
+MODEL_NAME = 'lstm_model.hd5'
 loaded_model = None
 
 temp_predict = ''
@@ -41,6 +41,7 @@ session = tf.compat.v1.Session(graph=tf.compat.v1.Graph())
 actions = {0: 'Nod', 1: 'Shake'}
 PREVIOUS_SHOWN = ''
 
+
 class Service:
 
     def __init__(self):
@@ -48,6 +49,7 @@ class Service:
         self.ctrl_uuid = None
         self.freq_uuid = None
         self.freq_bits = bytearray([0x0A])  # 10hz
+
 
 class Sensor(Service):
 
@@ -64,6 +66,7 @@ class Sensor(Service):
         val = await client.read_gatt_char(self.data_uuid)
         return self.callback(1, val)
 
+
 class BatteryService(Service):
     def __init__(self):
         super().__init__()
@@ -72,6 +75,7 @@ class BatteryService(Service):
     async def read(self, client):
         val = await client.read_gatt_char(self.data_uuid)
         return int(val[0])
+
 
 class MovementSensorMPU9250SubService:
 
@@ -89,9 +93,9 @@ class MovementSensorMPU9250(Sensor):
     GYRO_XYZ = 7
     ACCEL_XYZ = 7 << 3
     MAG_XYZ = 1 << 6
-    ACCEL_RANGE_2G  = 0 << 8
-    ACCEL_RANGE_4G  = 1 << 8
-    ACCEL_RANGE_8G  = 2 << 8
+    ACCEL_RANGE_2G = 0 << 8
+    ACCEL_RANGE_4G = 1 << 8
+    ACCEL_RANGE_8G = 2 << 8
     ACCEL_RANGE_16G = 3 << 8
 
     def __init__(self):
@@ -121,9 +125,9 @@ class MovementSensorMPU9250(Sensor):
 
     async def read(self, client):
         val = await client.read_gatt_char(self.data_uuid)
-        return self.callback(1, val)       
+        return self.callback(1, val)
 
-        
+
 class GyroscopeSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
     def __init__(self):
         super().__init__()
@@ -140,12 +144,12 @@ class AccelerometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
     def __init__(self):
         super().__init__()
         self.bits = MovementSensorMPU9250.ACCEL_XYZ | MovementSensorMPU9250.ACCEL_RANGE_4G
-        self.scale = 8.0/32768.0 
+        self.scale = 8.0/32768.0
 
     def cb_sensor(self, data):
         '''Returns (x_accel, y_accel, z_accel) in units of g'''
         rawVals = data[3:6]
-        return [(x*self.scale) for x in rawVals] 
+        return [(x*self.scale) for x in rawVals]
 
 
 class MagnetometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
@@ -160,6 +164,7 @@ class MagnetometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
         rawVals = data[6:9]
         return [(x*self.scale) for x in rawVals]
 
+
 class BarometerSensor(Sensor):
     def __init__(self):
         super().__init__()
@@ -172,11 +177,13 @@ class BarometerSensor(Sensor):
         press = (pH*65536 + pM*256 + pL) / 100.0
         return press
 
+
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
         print("Connected")
     else:
         print("Failed to connect. Error code: %d." % rc)
+
 
 class lstm_model():
     def __init__(self):
@@ -222,7 +229,7 @@ class lstm_model():
         self.clear_buffer()
         themax = numpy.argmax(result[0])
         confidence = 0.93
-        if (result[0][themax] < confidence): # prediction = 'IDLE'            
+        if (result[0][themax] < confidence):  # prediction = 'IDLE'
             if temp_predict != 'IDLE':
                 if time() - predict_time < 3:
                     return temp_predict
@@ -235,13 +242,15 @@ class lstm_model():
             temp_predict = actions[themax]
             predict_time = time()
             return temp_predict
-                     
+
+
 def setup(hostname):
     client = mqtt.Client()
     client.on_connect = on_connect
     client.connect(hostname)
     client.loop_start()
     return client
+
 
 def append_buffer(baro_reading, motion_reading):
     BARO_BUFFER.append(baro_reading)
@@ -255,31 +264,33 @@ def append_buffer(baro_reading, motion_reading):
     MAG_Y_BUFFER.append(motion_reading[7])
     MAG_Z_BUFFER.append(motion_reading[8])
 
+
 def check_and_publish(prediction, mqtt_client):
     global PREVIOUS_SHOWN
     result = {}
     if prediction != PREVIOUS_SHOWN:
         result["Shown"] = prediction
-        result["batterylife"] = BATTERYLIFE        
+        result["batterylife"] = BATTERYLIFE
         #########################################
         #  Select your topic before publishing  #
         #########################################
-        mqtt_client.publish("Group_12/LSTM/predict/Glen", json.dumps(result))
-        # mqtt_client.publish("Group_12/LSTM/predict/Sean", json.dumps(result))
+        # mqtt_client.publish("Group_12/LSTM/predict/Glen", json.dumps(result))
+        mqtt_client.publish("Group_12/LSTM/predict/Sean", json.dumps(result))
         # mqtt_client.publish("Group_12/LSTM/predict/Nicholas", json.dumps(result))
-    
+
     PREVIOUS_SHOWN = prediction
+
 
 async def run(address):
     async with BleakClient(address) as client:
         global BATTERYLIFE
-        
+
         x = await client.is_connected()
         print("Connected: {0}".format(x))
 
         # Setting MQTT Client
         mqtt_client = setup("test.mosquitto.org")
-    
+
         # Enabling sensors
         barometer_sensor = await BarometerSensor().enable(client)
         acc_sensor = AccelerometerSensorMovementSensorMPU9250()
@@ -300,20 +311,25 @@ async def run(address):
         model = lstm_model()
 
         # Iterations of data collection
-        timesteps = 5   
-            
+        timesteps = 5
+
         while (True):
             for i in range(0, timesteps):
                 baro_reading = await barometer_sensor.read(client)
                 motion_reading = await m_sensor.read(client)
                 append_buffer(baro_reading, motion_reading)
-            
+
             prediction = model.predict()
             print('predicted result: ', prediction)
             if time() - prev_battery_reading_time > 15:
                 BATTERYLIFE = await battery.read(client)
                 prev_battery_reading_time = time()
             check_and_publish(prediction, mqtt_client)
+            # with open('./battlife.txt', 'a') as battlife_file:
+            #     battlife_file.write(f"prediction: {prediction}\n")
+            #     battlife_file.write(f"battery life: {BATTERYLIFE}\n")
+            #     battlife_file.write(f"timestamp: {ctime(time())}\n")
+            #     battlife_file.write("--------------------------\n")
 
 if __name__ == '__main__':
 
@@ -321,7 +337,7 @@ if __name__ == '__main__':
     try:
         with open(f"{sys.path[0]}/sensortag_addr.txt") as f:
             address = (
-                f.read() 
+                f.read()
                 if platform.system() != "Darwin"
                 else "6FFBA6AE-0802-4D92-B1CD-041BE4B4FEB9"
             )
@@ -337,4 +353,4 @@ if __name__ == '__main__':
             print(f"exception: {e}")
 
     except FileNotFoundError:
-        print("no file named sensortag_addr.txt, create file and input sensortag MAC addr")      
+        print("no file named sensortag_addr.txt, create file and input sensortag MAC addr")

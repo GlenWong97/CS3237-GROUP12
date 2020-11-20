@@ -18,12 +18,12 @@ import sys
 from bleak import BleakClient
 
 # 0: Idle, 1: Nod, 2: Shake, 3: Look up, 4: Tilt
-LABEL = '4'
+LABEL = '3'
 LABELTOACTION = {
     '0': 'Idle',
-    '1': 'Nod',
-    '2': 'Shake',
-    '3': 'Look up',
+    '1': 'Raise',
+    '2': 'Wave',
+    '3': 'Clap',
     '4': 'Tilt',
 }
 # Coordination global variable
@@ -261,7 +261,7 @@ async def run(address):
                     baro_file.write("{},".format(data1))
                     val_count += 1
                     write_count += 1
-            
+
         print("Finished training...")
 
 
