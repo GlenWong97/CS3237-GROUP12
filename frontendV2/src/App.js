@@ -4,12 +4,21 @@ import './App.css';
 import Layout from './Templates/Layout';
 
 const imagePaths = {
+  "NORAISE": "/transparent.png",
+
+  // Head
   "NOD": "/yes.png",
   "SHAKE": "/no.png",
   "IDLE": "/sleeping.png",
   "TILT": "/thinking.png",
-  "RAISE": "/raised_hand.jpg",
-  "NORAISE": "/transparent.png"
+
+  // Hand
+  "HAND_IDLE": "/meditation.png",
+  "RAISE": "/raise-hand.png",
+  "WAVE": "/waving-hand.png",
+  "CLAP": "/clapping.png",
+
+
 }
 
 const WebcamComponent = () => <Webcam 
@@ -34,8 +43,12 @@ console.log("Connected");
 client.subscribe('Group_12/LSTM/predict/Glen');
 client.subscribe('Group_12/LSTM/predict/Sean');
 client.subscribe('Group_12/LSTM/predict/Nicholas');
+client.subscribe('Group_12/LSTM/predict/Glen_hand');
+client.subscribe('Group_12/LSTM/predict/Sean_hand');
+client.subscribe('Group_12/LSTM/predict/Nicholas_hand');
 
-// EC2 SAMPLE: mosquitto_pub -t 'Group_12/LSTM/predict/Glen' -h '13.229.102.188' -u 'permasteo' -P 'cs3237g23' -m '{ "Prediction": "SHAKE", "Shown": "SHAKE", "batterylife": 10}'
+// EC2 SAMPLE: mosquitto_pub -t 'Group_12/LSTM/predict/Glen' -h '13.229.251.38' -u 'permasteo' -P 'cs3237g23' -m '{ "Shown": "SHAKE", "batterylife": 10}'
+// EC2 SAMPLE: mosquitto_pub -t 'Group_12/LSTM/predict/Glen_hand' -h '13.229.251.38' -u 'permasteo' -P 'cs3237g23' -m '{ "Shown": "RAISE", "batterylife": 100}'
 
 function App() {
   var note;
@@ -43,12 +56,12 @@ function App() {
   // TO ADD HAND GESTURES WHEN IMPLEMENTED
   client.on('message', function (topic, message) {
     note = JSON.parse(message.toString());
-    console.log(note);
-    console.log(topic);
+    // console.log(note);
+    // console.log(topic);
     if (topic === 'Group_12/LSTM/predict/Glen') {
       setStatusGlen("Online");
       setHeadGlen(note['Shown']);
-      setBatteryLifeA(note['batterylife']);
+      setbatteryLifeGlen(note['batterylife']);
     }
     if (topic === 'Group_12/LSTM/predict/Sean') { 
       setStatusSean("Online");
@@ -60,22 +73,41 @@ function App() {
       setHeadNic(note['Shown']);
       setBatteryLifeNic(note['batterylife']); 
     }
+
+    if (topic === 'Group_12/LSTM/predict/Glen_hand') {
+      setStatusGlen("Online");
+      setHandGlen(note['Shown']);
+      setbatteryLifeGlenHand(note['batterylife']);
+    }
+    if (topic === 'Group_12/LSTM/predict/Sean_hand') { 
+      setStatusSean("Online");
+      setHandSean(note['Shown']);
+      setBatteryLifeSeanHand(note['batterylife']); 
+    }
+    if (topic === 'Group_12/LSTM/predict/Nicholas_hand') { 
+      setStatusNic("Online");
+      setHandNic(note['Shown']);
+      setBatteryLifeNicHand(note['batterylife']); 
+    }
   });
 
   const [statusGlen, setStatusGlen] = useState("Offline");
   const [headGlen, setHeadGlen] = useState("nothing heard");
   const [handGlen, setHandGlen] = useState("nothing heard");
-  const [batteryLifeA, setBatteryLifeA] = useState(0);
+  const [batteryLifeGlen, setbatteryLifeGlen] = useState(-1);
+  const [batteryLifeGlenHand, setbatteryLifeGlenHand] = useState(-1);
 
   const [statusSean, setStatusSean] = useState("Offline");
   const [headSean, setHeadSean] = useState("nothing heard");
   const [handSean, setHandSean] = useState("nothing heard");
-  const [batteryLifeSean, setBatteryLifeSean] = useState(0);
+  const [batteryLifeSean, setBatteryLifeSean] = useState(-1);
+  const [batteryLifeSeanHand, setBatteryLifeSeanHand] = useState(-1);
 
   const [statusNic, setStatusNic] = useState("Offline");
   const [headNic, setHeadNic] = useState("nothing heard");
   const [handNic, setHandNic] = useState("nothing heard");
-  const [batteryLifeNic, setBatteryLifeNic] = useState(0);
+  const [batteryLifeNic, setBatteryLifeNic] = useState(-1);
+  const [batteryLifeNicHand, setBatteryLifeNicHand] = useState(-1);
 
   function selectColor(text) {
     return text === 'Online' ? {"color": "green"} : {"color": "red"};
@@ -128,11 +160,21 @@ function App() {
           <div className="flex-33 container fixed-bg-3 text-center">
           <h4 className="text-left" style={selectColor(statusGlen)}><b>{statusGlen} <span className={`${isOnline(statusGlen) ? "dot" : ""}`}>●</span></b></h4>
           <h1 className="text-center display-4 pb-3 pt-3"><b>Glen</b></h1>
+
             <div className="inner-flex-top">
+
               <div className="flex-13 vert-center-m">
                 <h4 className="pb-3 pt-2">Head:</h4>
-                <img className="sm-icon" src={imagePaths[headGlen] ? imagePaths[headGlen] : "/sleeping.png" } alt="HeadGlen" />
+                <img className="sm-icon" src={imagePaths[headGlen] ? imagePaths[headGlen] : "/transparent.png" } alt="HeadGlen" />
               </div>
+
+              <div className="flex-13 vert-center-m">
+                <h4 className="pb-3 pt-2">Battery:</h4>
+                <h1 className="pb-2 pt-2 mb-mid">{batteryLifeGlen === -1 ? "" : batteryLifeGlen + "%"}</h1>
+              </div>  
+            </div>
+
+            <div className="inner-flex-top">
 
               <div className="flex-13 vert-center-m">
                 <h4 className="pb-3 pt-2">Hand:</h4>
@@ -141,9 +183,13 @@ function App() {
 
               <div className="flex-13 vert-center-m">
                 <h4 className="pb-3 pt-2">Battery:</h4>
-                <h1 className="pb-2 pt-2 mb-mid">{batteryLifeA}%</h1>
+                <h1 className="pb-2 pt-2 mb-mid">{batteryLifeGlenHand === -1 ? "" : batteryLifeGlenHand + "%"}</h1>
               </div>  
+
             </div>
+
+
+
           </div>
 
           <div className="flex-33 container fixed-bg-3 text-center">
@@ -152,19 +198,29 @@ function App() {
             <div className="inner-flex-top">
               <div className="flex-13 vert-center-m">
                 <h4 className="pb-3 pt-2">Head:</h4>
-                <img className="sm-icon" src={imagePaths[headSean] ? imagePaths[headSean] : "/sleeping.png" } alt="HeadSean" />
+                <img className="sm-icon" src={imagePaths[headSean] ? imagePaths[headSean] : "/transparent.png" } alt="HeadSean" />
               </div>
+
+              <div className="flex-13 vert-center-m">
+                <h4 className="pb-3 pt-2">Battery:</h4>
+                <h1 className="pb-2 pt-2 mb-mid">{batteryLifeSean === -1 ? "" : batteryLifeSean + "%"}</h1>
+              </div>  
+            </div>
+
+            <div className="inner-flex-top">
 
               <div className="flex-13 vert-center-m">
                 <h4 className="pb-3 pt-2">Hand:</h4>
                 <img className="sm-icon" src={imagePaths[handSean] ? imagePaths[handSean] : "/transparent.png" } alt="HandSean" />
               </div>
-
+              
               <div className="flex-13 vert-center-m">
                 <h4 className="pb-3 pt-2">Battery:</h4>
-                <h1 className="pb-2 pt-2 mb-mid">{batteryLifeSean}%</h1>
+                <h1 className="pb-2 pt-2 mb-mid">{batteryLifeSeanHand === -1 ? "" : batteryLifeSeanHand + "%"}</h1>
               </div>  
+              
             </div>
+
           </div>
 
           <div className="flex-33 container fixed-bg-3 text-center">
@@ -173,19 +229,33 @@ function App() {
             <div className="inner-flex-top">
               <div className="flex-13 vert-center-m">
                 <h4 className=" pb-3 pt-2">Head:</h4>
-                <img className="sm-icon" src={imagePaths[headNic] ? imagePaths[headNic] : "/sleeping.png" } alt="HeadNic" />
+                <img className="sm-icon" src={imagePaths[headNic] ? imagePaths[headNic] : "/transparent.png" } alt="HeadNic" />
               </div>
+
+              <div className="flex-13 vert-center-m">
+                <h4 className="pb-3 pt-2">Battery:</h4>
+                <h1 className="pb-2 pt-2 mb-mid">{batteryLifeNic === -1 ? "" : batteryLifeNic + "%"}</h1>
+              </div>  
+            </div>
+
+            <div className="inner-flex-top">
 
               <div className="flex-13 vert-center-m">
                 <h4 className="pb-3 pt-2">Hand:</h4>
                 <img className="sm-icon" src={imagePaths[handNic] ? imagePaths[handNic] : "/transparent.png" } alt="HandNic" />
               </div>
-
+              
               <div className="flex-13 vert-center-m">
                 <h4 className="pb-3 pt-2">Battery:</h4>
-                <h1 className="pb-2 pt-2 mb-mid">{batteryLifeNic}%</h1>
+                <h1 className="pb-2 pt-2 mb-mid">{batteryLifeNicHand === -1 ? "" : batteryLifeNicHand + "%"}</h1>
               </div>  
+              
             </div>
+
+
+
+
+
           </div>
 
         </div>
