@@ -168,7 +168,7 @@ class lstm_model():
             self._actions = {0: 'HAND_IDLE', 1: 'RAISE', 2: 'WAVE', 3: 'CLAP'}
             self._IDLE = 'HAND_IDLE'
         else: # head model
-            self._confidence = 0.88
+            self._confidence = 0.94
             self._actions = {0: 'NOD', 1: 'SHAKE', 2: 'LOOKUP', 3: 'TILT'}
             self._IDLE = 'IDLE'
 
