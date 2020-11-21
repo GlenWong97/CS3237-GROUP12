@@ -14,7 +14,7 @@ const imagePaths = {
 
   // Hand
   "HAND_IDLE": "/meditation.png",
-  "RAISE": "/raised_hand.png",
+  "RAISE": "/raised_hand.jpg",
   "WAVE": "/waving-hand.png",
   "CLAP": "/clapping.png",
 
