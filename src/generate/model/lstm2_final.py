@@ -15,10 +15,10 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.models import Sequential, load_model
 from matplotlib import pyplot
 
-MODEL_NAME = 'lstm_model.hd5'
+MODEL_NAME = 'hand_model.hd5'
 
 # number of classes to classify, for now is 4 (nod, shake, up, tilt)
-NUM_CLASSES = 5
+NUM_CLASSES = 4
 
 
 def load_file(filepath):
@@ -110,15 +110,9 @@ def buildlstm(model_name, trainX, trainy, testX, testy):
         model = Sequential()
         model.add(LSTM(200, input_shape=(n_timesteps, n_features)))
         model.add(Dropout(0.1))
-        model.add(Dense(500, activation='relu'))
-        model.add(Dropout(0.1))
-        model.add(Dense(800, activation='relu'))
-        model.add(Dropout(0.1))
         model.add(Dense(1000, activation='relu'))
         model.add(Dropout(0.1))
         model.add(Dense(1000, activation='relu'))
-        model.add(Dropout(0.1))
-        model.add(Dense(500, activation='relu'))
         model.add(Dropout(0.1))
         model.add(Dense(100, activation='relu'))
         model.add(Dropout(0.1))

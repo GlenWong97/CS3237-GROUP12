@@ -161,13 +161,16 @@ class lstm_model():
     def __init__(self, model):
         self._temp_predict = ''
         self._predict_time = 0.0
+        self._model = model
 
         if model == "hand_model.hd5":
             self._confidence = 0.85
             self._actions = {0: 'HAND_IDLE', 1: 'RAISE', 2: 'WAVE', 3: 'CLAP'}
+            self._IDLE = 'HAND_IDLE'
         else: # head model
-            self._confidence = 0.88
+            self._confidence = 0.94
             self._actions = {0: 'NOD', 1: 'SHAKE', 2: 'LOOKUP', 3: 'TILT'}
+            self._IDLE = 'IDLE'
 
         self._loaded_model = load_model(model)
         print(f"{model} loaded, ready to predict")
@@ -229,17 +232,19 @@ class lstm_model():
     def predict(self):
         data = self.load_dataset()
         result = self._loaded_model.predict(data)
+        # print(f"result: {result}")
         self.clear_buffer()
         themax = numpy.argmax(result[0])
+        # print(f"themax: {themax}")
 
         if (result[0][themax] < self._confidence): # prediction = 'IDLE'            
             
-            if self._temp_predict != 'IDLE':
+            if self._temp_predict != self._IDLE:
                 if time() - self._predict_time < SHOW_INTERVAL:
                     return self._temp_predict
                 else:
-                    self._temp_predict = 'IDLE'
-                    return 'IDLE'
+                    self._temp_predict = self._IDLE
+                    return self._IDLE
             else:
                 return self._temp_predict
         else:
